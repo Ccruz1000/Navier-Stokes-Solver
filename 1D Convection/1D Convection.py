@@ -37,10 +37,10 @@ dt = 1e-4
 
 #physical parameters
 L = 1
-b = 0.07
+b = 1e-3
 
 #space parameters
-N = 200
+N = 400
 dx = L / N
 
 #Initialize solution arrays
@@ -69,6 +69,7 @@ while t < t_final:
 plt.plot(x, q1, label= "1D Burger's")
 plt.legend()
 plt.grid()
+plt.title('dt= ' + str(dt) + ' / N= ' + str(N))
 plt.show()
 
 
