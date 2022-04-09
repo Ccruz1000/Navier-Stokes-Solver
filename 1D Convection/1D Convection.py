@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib as plt
 
-def step(t, t_end, step_values):
+def step(t, t_end, step_value):
     if t < t_end:
         value = step_value
     else:
@@ -30,11 +30,30 @@ c = 1
 
 #space parameters
 N = 200
-dx = 1 / N
+dx = L / N
 
 #Initialize solution arrays
 q1 = np.zeros(N + 1)
 q1_old = np.zeros(N + 1)
 dq1dx = np.zeros(N + 1)
+
+x = np.zeros(N + 1)
+
+for i in np.arange(N):
+    x[i + 1] += x[i] + L / N
+
+while t < t_final:
+    t += dt
+
+    q1[0] = step(t, 0.2, 1)
+
+    dq1dx = d1_conv(dx, q1_old, N)
+
+    q1[1: -1] = q1_old[1: -1] - c * dt * dq1dx[1: -1]
+
+plt.plot(x, q1, label='1D convection')
+plt.legend()
+plt.grid()
+plt.show()
 
 
