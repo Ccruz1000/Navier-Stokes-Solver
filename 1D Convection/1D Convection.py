@@ -50,6 +50,7 @@ while t < t_final:
     dq1dx = d1_conv(dx, q1_old, N)
 
     q1[1: -1] = q1_old[1: -1] - c * dt * dq1dx[1: -1]
+    q1_old = q1
 
 plt.plot(x, q1, label='1D convection')
 plt.legend()
