@@ -1,6 +1,14 @@
 import numpy as np
 import matplotlib as plt
 
+def step(t, t_end, step_values):
+    if t < t_end:
+        value = step_value
+    else:
+        value = 0
+    return value
+
+
 #Define the function to calculate the first derivative
 def d1_conv (dx, q, N):
     N = q.shape[0]
