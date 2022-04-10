@@ -14,7 +14,7 @@ def step(t, t_end, step_value):
 
 
 #Define the function to calculate the first derivative
-def duj(dx, u, N):
+def conv(dx, u, N):
     N = u.shape[0]
     dudx = np.zeros_like(u)
     dudx[0] = (u[1] - u[0]) / dx
@@ -23,16 +23,8 @@ def duj(dx, u, N):
         dudx[i] = (u[i] - u[i-1]) / dx
     return dudx
 
-def dui(dy, u, N):
-    N = u.shape[0]
-    dudy = np.zeros_like(u)
-    dudy[0] = (u[1] - u[0]) / dy
 
-    for i in np.arange(1, N-1):
-        dudy[i] = (u[i] - u[i-1]) / dy
-    return dudy
-
-def d1x_diff(dx, u, N):
+def diff(dx, u, N):
     N = u.shape[0]
     dudx2 = np.zeros_like(u)
     dudx2[0] = (u[2] + u[0] - 2 * u[1]) / (dx ** 2)
@@ -42,15 +34,6 @@ def d1x_diff(dx, u, N):
 
     return dudx2
 
-def d1y_diff(dy, u, N):
-    N = u.shape[0]
-    dudy2 = np.zeros_like(u)
-    dudy2[0] = (u[2] + u[0] - 2 * u[1]) / (dy ** 2)
-
-    for i in np.arange(1, N-1):
-        dudy2[i] = (u[i+1] - 2 * u[i] + u[i-1]) / (dy ** 2)
-
-    return dudy2
 
 #time variables
 t = 0
@@ -68,8 +51,8 @@ dx = L / N
 dy = L / M
 
 #Initialize solution arrays
-u1x = np.zeros(N + 1)
-u1x_old = np.zeros(N + 1)
+u1 = np.zeros(N + 1)
+u1_old = np.zeros(N + 1)
 du1dx = np.zeros(N + 1)
 du2dx = np.zeros(N + 1)
 du1dy = np.zeros(M + 1)
@@ -88,16 +71,16 @@ while t < t_final:
     t += dt
 
 
-    q1[0, i] = step(t, 0.2, 1)
+    u1[0] = step(t, 0.2, 1)
 
-    dq1dx = d1x_conv(dx, q1_old, N)
-    dq2dx = d1x_diff(dx, q1_old, N)
+    du1dx = conv(dx, u1_old, N)
+    du2dx = diff(dx, u1_old, N)
 
-    q1[1: -2] = q1_old[1: -2] + b * dt * dq2dx[1: -2] - q1_old[1: -2] * dt * dq1dx[1: -2]
-    q1[-1] = q1[-2]     #zero gradient boundary layer
-    q1_old = q1
+    u1[1: -2] = u1_old[1: -2] + b * dt * du2dx[1: -2] - u1_old[1: -2] * dt * du1dx[1: -2]
+    u1[-1] = u1[-2]     #zero gradient boundary layer
+    u1_old = u1
 
-plt.plot(x, q1, label= "1D Burger's")
+plt.plot(x, u1, label= "1D Burger's")
 plt.legend()
 plt.grid()
 plt.title('dt= ' + str(dt) + ' / N= ' + str(N))
