@@ -51,12 +51,10 @@ dx = L / N
 dy = L / M
 
 #Initialize solution arrays
-u1 = np.zeros(N + 1)
-u1_old = np.zeros(N + 1)
-du1dx = np.zeros(N + 1)
-du2dx = np.zeros(N + 1)
-du1dy = np.zeros(M + 1)
-du2dy = np.zeros(M + 1)
+u1 = np.zeros(N + 1, M + 1)
+u1_old = np.zeros(N + 1, M + 1)
+v1 = np.zeros(N + 1, M + 1)
+v1_old = np.zeros(N + 1, M + 1)
 
 x = np.zeros(N + 1)
 y = np.zeros(M + 1)
@@ -73,12 +71,23 @@ while t < t_final:
 
     u1[0] = step(t, 0.2, 1)
 
-    du1dx = conv(dx, u1_old, N)
-    du2dx = diff(dx, u1_old, N)
+    #Define discretization for x component
+    dudx = conv(dx, u1_old, N)
+    dudy = conv(dy, u1_old, N)
+    du2dx2 = diff(dx, u1_old, N)
+    du2dy2 = diff(dy, u1_old, N)
 
-    u1[1: -2] = u1_old[1: -2] + b * dt * du2dx[1: -2] - u1_old[1: -2] * dt * du1dx[1: -2]
-    u1[-1] = u1[-2]     #zero gradient boundary layer
+    #Define discretizatiom for y component
+    dvdx = conv(dx, v1_old, N)
+    dvdy = conv(dy, v1_old, N)
+    dv2dx2 = diff(dx, v1_old, N)
+    dv2dy2 = diff(dy, v1_old, N)
+
+    u1[1: -1, 1: -1] = u1_old[1: -1, 1: -1] - dt * u1_old * dudx[1: -1, 1: -1] - dt * v1_old * dudy[1: -1, 1: -1] + b * dt * du2dx2[1: -1, 1: -1] + b * dt * du2dy2[1: -1, 1: -1]
+    v1[1: -1, 1: -1] = v1_old[1: -1, 1: -1] - dt * u1_old * dvdx[1: -1, 1: -1] - dt * v1_old * dvdy[1: -1,1: -1] + b * dt * dv2dx2[1: -1, 1: -1] + b * dt * dv2dy2[1: -1, 1: -1]
     u1_old = u1
+    v1_old = v1
+
 
 plt.plot(x, u1, label= "1D Burger's")
 plt.legend()
