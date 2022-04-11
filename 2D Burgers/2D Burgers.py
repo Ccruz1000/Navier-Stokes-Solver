@@ -17,11 +17,12 @@ def step(t, t_end, step_value):
 def conv(dx, u, N):
     N = u.shape[0]
     dudx1 = np.zeros((len(u),2))
-    dudx1[0, 0] = (u[1, 0] - u[0, 0]) / dx
-    dudx1[N, 0] = 0
+    dudx1[0, :] = (u[1, :] - u[0, :]) / dx
+    dudx1[N - 1, :] = (u[-2, :] - u[-1, :]) / dx
+
 
     for j in np.arange(0, 1):
-        for i in np.arange(1, N):
+        for i in np.arange(1, N - 1):
             dudx1[i, j] = (u[i, j] - u[i-1, j]) / dx
     return dudx1
 
@@ -29,13 +30,12 @@ def conv(dx, u, N):
 def diff(dx, u, N):
     N = u.shape[0]
     dudx2 = np.zeros((len(u), 2))
-    dudx2[0, 0] = (u[2, 0] + u[0, 0] - 2 * u[1, 0]) / (dx ** 2)
-    dudx2[N, 0] = 0
+    dudx2[0, :] = (u[2, :] + u[0, :] - 2 * u[1, :]) / (dx ** 2)
+    dudx2[N - 1, :] = 0
 
     for j in np.arange(0, 1):
-        for i in np.arange(1, N):
+        for i in np.arange(1, N - 1):
             dudx2[i, j] = (u[i+1, j] - 2 * u[i, j] + u[i-1, j]) / (dx ** 2)
-
     return dudx2
 
 
@@ -49,8 +49,8 @@ L = 1
 b = 1e-3
 
 #space parameters
-N = 400
-M = 400
+N = 200
+M = 200
 dx = L / N
 dy = L / M
 
@@ -63,6 +63,7 @@ v1_old = np.zeros((N + 1, 2))
 x = np.zeros(N + 1)
 y = np.zeros(M + 1)
 
+
 for i in np.arange(N):
     x[i + 1] += x[i] + L / N
 
@@ -73,7 +74,7 @@ while t < t_final:
     t += dt
 
 
-    u1[0] = step(t, 0.2, 1)
+    u1[0, 0] = step(t, 0.2, 1)
 
     #Define discretization for x component
     dudx = conv(dx, u1_old, N)
@@ -87,13 +88,14 @@ while t < t_final:
     dv2dx2 = diff(dx, v1_old, N)
     dv2dy2 = diff(dy, v1_old, N)
 
-    u1[1: -1, 1: -1] = u1_old[1: -1, 1: -1] - dt * u1_old * dudx[1: -1, 1: -1] - dt * v1_old * dudy[1: -1, 1: -1] + b * dt * du2dx2[1: -1, 1: -1] + b * dt * du2dy2[1: -1, 1: -1]
-    v1[1: -1, 1: -1] = v1_old[1: -1, 1: -1] - dt * u1_old * dvdx[1: -1, 1: -1] - dt * v1_old * dvdy[1: -1,1: -1] + b * dt * dv2dx2[1: -1, 1: -1] + b * dt * dv2dy2[1: -1, 1: -1]
+    u1[1: -1, 1: -1] = u1_old[1: -1, 1: -1] - dt * u1_old[1: -1, 1: -1] * dudx[1: -1, 1: -1] - dt * v1_old[1: -1, 1: -1] * dudy[1: -1, 1: -1] + b * dt * du2dx2[1: -1, 1: -1] + b * dt * du2dy2[1: -1, 1: -1]
+    v1[1: -1, 1: -1] = v1_old[1: -1, 1: -1] - dt * u1_old[1: -1, 1: -1] * dvdx[1: -1, 1: -1] - dt * v1_old[1: -1, 1: -1] * dvdy[1: -1,1: -1] + b * dt * dv2dx2[1: -1, 1: -1] + b * dt * dv2dy2[1: -1, 1: -1]
     u1_old = u1
     v1_old = v1
+    print(u1)
 
-
-plt.plot(x, u1, label= "1D Burger's")
+plt.plot(x, u1[:, 0], label= "1D Burger's")
+plt.plot(x, v1[:, 0])
 plt.legend()
 plt.grid()
 plt.title('dt= ' + str(dt) + ' / N= ' + str(N))
