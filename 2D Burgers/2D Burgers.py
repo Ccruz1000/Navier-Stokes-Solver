@@ -21,8 +21,8 @@ def conv(dx, u, N):
     dudx1[N - 1, :] = (u[-2, :] - u[-1, :]) / dx
 
 
-    for j in np.arange(0, 1):
-        for i in np.arange(1, N - 1):
+    for j in range (0, 2):
+        for i in range(1, N - 1):
             dudx1[i, j] = (u[i, j] - u[i-1, j]) / dx
     return dudx1
 
@@ -33,8 +33,8 @@ def diff(dx, u, N):
     dudx2[0, :] = (u[2, :] + u[0, :] - 2 * u[1, :]) / (dx ** 2)
     dudx2[N - 1, :] = 0
 
-    for j in np.arange(0, 1):
-        for i in np.arange(1, N - 1):
+    for j in range (0, 2):
+        for i in range(1, N - 1):
             dudx2[i, j] = (u[i+1, j] - 2 * u[i, j] + u[i-1, j]) / (dx ** 2)
     return dudx2
 
@@ -74,7 +74,8 @@ while t < t_final:
     t += dt
 
 
-    u1[0, 0] = step(t, 0.2, 1)
+    u1[0, :] = step(t, 0.2, 1)
+    v1[0, :] = step(t, 0.2, 1)
 
     #Define discretization for x component
     dudx = conv(dx, u1_old, N)
@@ -92,10 +93,9 @@ while t < t_final:
     v1[1: -1, 1: -1] = v1_old[1: -1, 1: -1] - dt * u1_old[1: -1, 1: -1] * dvdx[1: -1, 1: -1] - dt * v1_old[1: -1, 1: -1] * dvdy[1: -1,1: -1] + b * dt * dv2dx2[1: -1, 1: -1] + b * dt * dv2dy2[1: -1, 1: -1]
     u1_old = u1
     v1_old = v1
-    print(u1)
 
 plt.plot(x, u1[:, 0], label= "1D Burger's")
-plt.plot(x, v1[:, 0])
+plt.plot(y, v1[:, 0])
 plt.legend()
 plt.grid()
 plt.title('dt= ' + str(dt) + ' / N= ' + str(N))
