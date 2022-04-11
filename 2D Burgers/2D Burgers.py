@@ -16,12 +16,12 @@ def step(t, t_end, step_value):
 #Define the function to calculate the first derivative
 def conv(dx, u, N):
     N = u.shape[0]
-    dudx1 = np.zeros((len(u),2))
+    dudx1 = np.zeros((len(u), 2))
     dudx1[0, :] = (u[1, :] - u[0, :]) / dx
     dudx1[N - 1, :] = (u[-2, :] - u[-1, :]) / dx
 
 
-    for j in np.arange(0, 1):
+    for j in np.arange(0, 2):
         for i in np.arange(1, N - 1):
             dudx1[i, j] = (u[i, j] - u[i-1, j]) / dx
     return dudx1
@@ -88,14 +88,13 @@ while t < t_final:
     dv2dx2 = diff(dx, v1_old, N)
     dv2dy2 = diff(dy, v1_old, N)
 
-    u1[1: -1, 1: -1] = u1_old[1: -1, 1: -1] - dt * u1_old[1: -1, 1: -1] * dudx[1: -1, 1: -1] - dt * v1_old[1: -1, 1: -1] * dudy[1: -1, 1: -1] + b * dt * du2dx2[1: -1, 1: -1] + b * dt * du2dy2[1: -1, 1: -1]
-    v1[1: -1, 1: -1] = v1_old[1: -1, 1: -1] - dt * u1_old[1: -1, 1: -1] * dvdx[1: -1, 1: -1] - dt * v1_old[1: -1, 1: -1] * dvdy[1: -1,1: -1] + b * dt * dv2dx2[1: -1, 1: -1] + b * dt * dv2dy2[1: -1, 1: -1]
+    u1[1: -1, 0: -1] = u1_old[1: -1, 0: -1] - dt * u1_old[1: -1, 0: -1] * dudx[1: -1, 0: -1] - dt * v1_old[1: -1, 0: -1] * dudy[1: -1, 0: -1] + b * dt * du2dx2[1: -1, 0: -1] + b * dt * du2dy2[1: -1, 0: -1]
+    v1[1: -1, 0: -1] = v1_old[1: -1, 0: -1] - dt * u1_old[1: -1, 0: -1] * dvdx[1: -1, 0: -1] - dt * v1_old[1: -1, 0: -1] * dvdy[1: -1, 0: -1] + b * dt * dv2dx2[1: -1, 0: -1] + b * dt * dv2dy2[1: -1, 0: -1]
     u1_old = u1
     v1_old = v1
-    print(u1)
 
 plt.plot(x, u1[:, 0], label= "1D Burger's")
-plt.plot(x, v1[:, 0])
+# plt.plot(x, v1[:, 0])
 plt.legend()
 plt.grid()
 plt.title('dt= ' + str(dt) + ' / N= ' + str(N))
