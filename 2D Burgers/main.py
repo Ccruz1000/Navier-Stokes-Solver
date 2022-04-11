@@ -16,21 +16,23 @@ def step(t, t_end, step_value):
 #Define the function to calculate the first derivative
 def conv(dx, u, N):
     N = u.shape[0]
-    dudx = np.zeros_like(u)
-    dudx[0] = (u[1] - u[0]) / dx
+    dudx1 = np.zeros_like((u, 2))
+    dudx1[0, 0] = (u[1, 0] - u[0, 0]) / dx
 
-    for i in np.arange(1, N-1):
-        dudx[i] = (u[i] - u[i-1]) / dx
-    return dudx
+    for j in np.arange(0, 1):
+        for i in np.arange(1, N - 1):
+            dudx1[i, j] = (u[i, j] - u[i-1, j]) / dx
+    return dudx1
 
 
 def diff(dx, u, N):
     N = u.shape[0]
-    dudx2 = np.zeros_like(u)
-    dudx2[0] = (u[2] + u[0] - 2 * u[1]) / (dx ** 2)
+    dudx2 = np.zeros_like((u, 2))
+    dudx2[0, 0] = (u[2, 0] + u[0, 0] - 2 * u[1, 0]) / (dx ** 2)
 
-    for i in np.arange(1, N-1):
-        dudx2[i] = (u[i+1] - 2 * u[i] + u[i-1]) / (dx ** 2)
+    for j in np.arange(0, 1):
+        for i in np.arange(1, N-1):
+            dudx2[i, j] = (u[i+1, j] - 2 * u[i, j] + u[i-1, j]) / (dx ** 2)
 
     return dudx2
 
@@ -51,10 +53,10 @@ dx = L / N
 dy = L / M
 
 #Initialize solution arrays
-u1 = np.zeros(N + 1, M + 1)
-u1_old = np.zeros(N + 1, M + 1)
-v1 = np.zeros(N + 1, M + 1)
-v1_old = np.zeros(N + 1, M + 1)
+u1 = np.zeros((N + 1, M + 1))
+u1_old = np.zeros((N + 1, M + 1))
+v1 = np.zeros((N + 1, M + 1))
+v1_old = np.zeros((N + 1, M + 1))
 
 x = np.zeros(N + 1)
 y = np.zeros(M + 1)
