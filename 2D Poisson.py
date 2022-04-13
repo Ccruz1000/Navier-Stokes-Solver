@@ -39,19 +39,22 @@ y = np.linspace(0, ly, M)
 b[int(M / 4), int(N / 4)] = 100
 b[int(3 * M / 4), int(3 * N / 4)] = -100
 
-for it in range(nt):
+def poisson2D(p, pd, b, dx, dy):
 
-    pd = p.copy()
+    for it in range(nt):
 
-    p[1:-1, 1:-1] = (((pd[1:-1, 2:] + pd[1:-1, :-2]) * dy ** 2 +
+        pd = p.copy()
+
+        p[1:-1, 1:-1] = (((pd[1:-1, 2:] + pd[1:-1, :-2]) * dy ** 2 +
                       (pd[2:, 1:-1] + pd[:-2, 1:-1]) * dx ** 2 -
                       b[1:-1, 1:-1] * dx ** 2 * dy ** 2) /
                      (2 * (dx ** 2 + dy ** 2)))
 
-    p[0, :] = 0
-    p[M -1, :] = 0
-    p[:, 0] = 0
-    p[:, N - 1] = 0
+        p[0, :] = 0
+        p[M -1, :] = 0
+        p[:, 0] = 0
+        p[:, N - 1] = 0
+    return p
 
 
 
