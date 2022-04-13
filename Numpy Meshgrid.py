@@ -46,3 +46,5 @@ Yon = Y[pts_on]
 # plt.scatter(Xin , Yin, s=0.01, c='b')
 plt.scatter(X, Y, s=0.01)
 plt.show()
+# TODO Determine how to return boundaries (ie object domain, fluid domain, walls, inlet, and outlet
+# TODO add airfoil functionality
