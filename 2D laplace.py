@@ -57,7 +57,7 @@ p = np.zeros((N, M))
 x = np.linspace(0, 2, N)
 y = np.linspace(0, 1, M)
 
-##boundary conditions
+# boundary conditions
 p[:, 0] = 0  # p = 0 @ x = 0
 p[:, -1] = y  # p = y @ x = 2
 p[0, :] = p[1, :]  # dp/dy = 0 @ y = 0
@@ -65,6 +65,6 @@ p[-1, :] = p[-2, :]  # dp/dy = 0 @ y = 1
 
 # 2D Plot with 3D projection
 
-p=laplace2d(p,y,dx,dy, c)
+p = laplace2d(p,y,dx,dy, c)
 
 plot2D(x, y, p)
