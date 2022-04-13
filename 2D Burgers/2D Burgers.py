@@ -92,9 +92,11 @@ while t < t_final:
     v1[1: -1, 0: -1] = v1_old[1: -1, 0: -1] - dt * u1_old[1: -1, 0: -1] * dvdx[1: -1, 0: -1] - dt * v1_old[1: -1, 0: -1] * dvdy[1: -1, 0: -1] + b * dt * dv2dx2[1: -1, 0: -1] + b * dt * dv2dy2[1: -1, 0: -1]
     u1_old = u1
     v1_old = v1
-
+print(len(x))
+print(len(u1))
+print(len(v1))
 plt.plot(x, u1[:, 0], label= "1D Burger's")
-# plt.plot(x, v1[:, 0])
+plt.plot(x, v1[:, 1], label="2D Burgers")
 plt.legend()
 plt.grid()
 plt.title('dt= ' + str(dt) + ' / N= ' + str(N))

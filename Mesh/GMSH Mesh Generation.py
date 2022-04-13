@@ -29,3 +29,5 @@ inlet_marker, outlet_marker, wall_marker, obstacle_marker = 1, 3, 5, 7
 walls = []
 obstacles = []
 
+
+
