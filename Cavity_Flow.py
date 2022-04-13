@@ -118,4 +118,13 @@ plt.contour(X, Y, p, cmap=cm.viridis)
 plt.quiver(X[::2, ::2], Y[::2, ::2], u[::2, ::2], v[::2, ::2])
 plt.xlabel('X')
 plt.ylabel('Y');
+
+
+fig = plt.figure(figsize=(11, 7), dpi=100)
+plt.contourf(X, Y, p, alpha=0.5, cmap=cm.viridis)
+plt.colorbar()
+plt.contour(X, Y, p, cmap=cm.viridis)
+plt.streamplot(X, Y, u, v)
+plt.xlabel('X')
+plt.ylabel('Y');
 plt.show()
