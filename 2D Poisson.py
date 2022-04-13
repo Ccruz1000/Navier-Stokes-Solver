@@ -56,5 +56,4 @@ def plot2D(x, y, p):
     plt.show()
 
 
-plot2D(x, y, p
-)
+plot2D(x, y, p)
