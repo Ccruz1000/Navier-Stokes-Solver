@@ -1,7 +1,6 @@
 import numpy
 from matplotlib import pyplot, cm
 from mpl_toolkits.mplot3d import Axes3D
-%matplotlib inline
 
 
 def build_up_b(rho, dt, dx, dy, u, v):
@@ -185,10 +184,10 @@ while udiff > .001:
 
     udiff = (numpy.sum(u) - numpy.sum(un)) / numpy.sum(u)
     stepcount += 1
-    print(stepcount)
-    fig = pyplot.figure(figsize=(11, 7), dpi=100)
-    pyplot.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3]);
+    #print(stepcount)
+fig = pyplot.figure(figsize=(11, 7), dpi=100)
+pyplot.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3]);
 
-    fig = pyplot.figure(figsize=(11, 7), dpi=100)
-    pyplot.quiver(X, Y, u, v);
-    pyplot.show()
+fig = pyplot.figure(figsize=(11, 7), dpi=100)
+pyplot.quiver(X, Y, u, v);
+pyplot.show()
