@@ -189,3 +189,4 @@ while udiff > .001:
 
     fig = pyplot.figure(figsize=(11, 7), dpi=100)
     pyplot.quiver(X, Y, u, v);
+    pyplot.show()
