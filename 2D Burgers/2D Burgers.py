@@ -17,8 +17,8 @@ def step(t, t_end, step_value):
 def conv(dx, u, N):
     N = u.shape[0]
     dudx1 = np.zeros((len(u), 2))
-    dudx1[0, :] = (u[1, :] - u[0, :]) / dx
-    dudx1[N - 1, :] = (u[-2, :] - u[-1, :]) / dx
+    dudx1[0, 1] = (u[1, :] - u[0, :]) / dx
+    dudx1[-1, :] = (u[-2, :] - u[-1, :]) / dx
 
 
     for j in np.arange(0, 2):
@@ -30,8 +30,8 @@ def conv(dx, u, N):
 def diff(dx, u, N):
     N = u.shape[0]
     dudx2 = np.zeros((len(u), 2))
-    dudx2[0, :] = (u[2, :] + u[0, :] - 2 * u[1, :]) / (dx ** 2)
-    dudx2[N - 1, :] = 0
+    dudx2[0, 1] = (u[2, :] + u[0, :] - 2 * u[1, :]) / (dx ** 2)
+    dudx2[-1, :] = 0
 
     for j in np.arange(0, 1):
         for i in np.arange(1, N - 1):
