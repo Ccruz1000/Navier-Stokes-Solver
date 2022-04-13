@@ -43,7 +43,7 @@ def laplace2d(p, y, dx, dy, l1norm_target):
 
 #physical parameters
 L = 1
-
+c = 1e-4 # L1 Target
 #space parameters
 N = 200
 M = 200
@@ -64,5 +64,7 @@ p[0, :] = p[1, :]  # dp/dy = 0 @ y = 0
 p[-1, :] = p[-2, :]  # dp/dy = 0 @ y = 1
 
 # 2D Plot with 3D projection
+
+p=laplace2d(p,y,dx,dy, c)
 
 plot2D(x, y, p)
