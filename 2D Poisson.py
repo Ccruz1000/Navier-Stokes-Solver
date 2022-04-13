@@ -24,7 +24,7 @@ ly = 1
 # space parameters
 N = 200
 M = 200
-nt = 100 # number of timesteps
+nt = 100 # Total time elapsed
 dx = lx / (N - 1)
 dy = ly / (M - 1)
 
@@ -56,6 +56,6 @@ def poisson2D(p, pd, b, dx, dy):
         p[:, N - 1] = 0
     return p
 
-
+p = poisson2D(p, pd, b, dx, dy)
 
 plot2D(x, y, p)
