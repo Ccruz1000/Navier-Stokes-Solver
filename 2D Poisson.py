@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
-#import plot2D
 
 
 # Define Parameters
@@ -26,8 +25,8 @@ x = np.linspace(L, N)
 y = np.linspace(L, M)
 
 # Source to be added to laplace equation
-b[M / 4, N / 4] = 100
-b[3 * M / 4, 3 * N / 4] = -100
+b[int(M / 4), int(N / 4)] = 100
+b[int(3 * M / 4), int(3 * N / 4)] = -100
 
 for it in range(nt):
 
