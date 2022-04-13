@@ -63,7 +63,7 @@ def pressure_poisson(p, dx, dy, b):
 def cavity_flow(nt, u, v, dt, dx, dy, p, rho, nu):
     un = np.empty_like(u)
     vn = np.empty_like(v)
-    b = np.zeros((ny, nx))
+    b = np.zeros((M, N))
 
     for n in range(nt):
         un = u.copy()
@@ -108,13 +108,14 @@ def cavity_flow(nt, u, v, dt, dx, dy, p, rho, nu):
 u, v, p = cavity_flow(nt, u, v, dt, dx, dy, p, rho, nu)
 
 
-fig = pyplot.figure(figsize=(11,7), dpi=100)
+fig = plt.figure(figsize=(11,7), dpi=100)
 # plotting the pressure field as a contour
-pyplot.contourf(X, Y, p, alpha=0.5, cmap=cm.viridis)
-pyplot.colorbar()
+plt.contourf(X, Y, p, alpha=0.5, cmap=cm.viridis)
+plt.colorbar()
 # plotting the pressure field outlines
-pyplot.contour(X, Y, p, cmap=cm.viridis)
+plt.contour(X, Y, p, cmap=cm.viridis)
 # plotting velocity field
-pyplot.quiver(X[::2, ::2], Y[::2, ::2], u[::2, ::2], v[::2, ::2])
-pyplot.xlabel('X')
-pyplot.ylabel('Y');
+plt.quiver(X[::2, ::2], Y[::2, ::2], u[::2, ::2], v[::2, ::2])
+plt.xlabel('X')
+plt.ylabel('Y');
+plt.show()
