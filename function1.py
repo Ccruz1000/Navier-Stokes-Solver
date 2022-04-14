@@ -13,6 +13,15 @@ def fir_o_for_y(dy,u,N):
         dudy[i] = (u[i+1]-u[i]) / (dy)
     return dudy
 
+def fir_o_for_y2d(dy,u,N):
+    N = u.shape[0]
+    dudy = np.zeros_like(u)
+    dudy[0] = (u[1]-u[0]) / (dy)
+
+    for i in np.arange(1, N-1):
+        dudy[i] = (u[i+1]-u[i]) / (dy)
+    return dudy
+
 #x-direction
 def fir_o_for_x(dx,u,N):
     N = u.shape[0]
