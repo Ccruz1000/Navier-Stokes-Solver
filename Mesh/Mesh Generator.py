@@ -3,7 +3,6 @@ import numpy as np
 import pygmsh
 import gmsh
 import meshio
-import optimesh
 import matplotlib.pyplot as plt
 
 # User Defined Functions
