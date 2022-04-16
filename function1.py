@@ -87,15 +87,7 @@ def fir_o_back_x2d(dx, u, N):
     return dudx1
 
 
-
-
-
-
-
-
-
-
-#First order accurate central difference
+# First order accurate central difference
 def fir_o_cen_y(dy,u,N):
     N = u.shape[0]
     dudy = np.zeros_like(u)
@@ -105,7 +97,9 @@ def fir_o_cen_y(dy,u,N):
         dudy[i] = (u[i+1]-u[i-1]) / (2*dy)
 
     return dudy
-#x-direction
+
+
+# x-direction
 def fir_o_cen_x(dx,u,N):
     N = u.shape[0]
     dudx = np.zeros_like(u)
@@ -272,14 +266,8 @@ def three_cen_sec_x2d(dx, u, N):
     return dudx2
 
 
-
-
-
-
-
-#Three point forward difference for second derivative
-
-def three_for_sec_y(dy,u,N):
+# Three point forward difference for second derivative
+def three_for_sec_y(dy, u, N):
     N = u.shape[0]
     dudy2 = np.zeros_like(u)
     dudy2[0] =(u[0]-2*u[1]+u[2]) / (dy**2)
