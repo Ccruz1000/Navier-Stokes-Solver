@@ -33,10 +33,10 @@ def TAUXX(u, v, lam, mu, DX, DY, call_case):
                 du_dx[j, i] = (u[j, i] - u[j, i - 1]) / DX  # Backward differencing
         du_dx[:, 0] = (u[:, 1] - u[:, 0]) / DX  # Forward difference at i = 0
     elif call_case == 'Correct_E':
-        for i in range(1, num_x):
+        for i in range(0, num_x - 1):
             for j in range(0, num_y):
                 du_dx[j, i] = (u[j, i + 1] - u[j, i]) / DX  # Forward differencing
-        du_dx[:, num_x] = (u[:, num_x] - u[:, num_x - 1]) / DX  # Backward difference at i = numx
+        du_dx[:, num_x - 1] = (u[:, num_x - 1] - u[:, num_x - 2]) / DX  # Backward difference at i = numx
     # Compute dv_dy
     for i in range(0, num_x):
         for j in range(1, num_y - 1):
@@ -111,7 +111,7 @@ def TAUYY(u, v, lam, mu, DX, DY, call_case):
         for i in range(0, numx):
             for j in range(0, numy - 1):
                 dv_dy[j, i] = (v[j + 1, i] - v[j, i]) / DY  # Forward difference
-        dv_dy[numy, :] = (v[numy, :] - v[numy - 1, :]) / DY  # Backward difference at j = numy
+        dv_dy[numy - 1, :] = (v[numy - 1, :] - v[numy - 2, :]) / DY  # Backward difference at j = numy
     # Calculate du_dx
     for i in range(1, numx - 1):
         for j in range(0, numy):
@@ -136,8 +136,8 @@ def QX(T, k, DX, call_case):
     elif call_case == 'Correct_E':
         for i in range(0, numx - 1):
             for j in range(0, numy):
-                dT_dx[j, i] = (T[j, i + 1] - T(j, i)) / DX  # Forward difference
-        dT_dx[:, numx] = (T[:, numx] - T[:, numx - 1]) / DX  # Backward difference at i = numx
+                dT_dx[j, i] = (T[j, i + 1] - T[j, i]) / DX  # Forward difference
+        dT_dx[:, numx - 1] = (T[:, numx - 1] - T[:, numx - 2]) / DX  # Backward difference at i = numx
     q_x = -1 * k * dT_dx
     return q_x
 
@@ -156,7 +156,7 @@ def QY(T, k, DY, call_case):
         for i in range(0, numx):
             for j in range(0, numy - 1):
                 dT_dy[j, i] = (T[j + 1, i] - T[j, i]) / DY  # Forward difference
-        dT_dy[numy, :] = (T[numy, :] - T[numy - 1, :]) / DY  # Backward dfference at j = numy
+        dT_dy[numy - 1, :] = (T[numy - 1, :] - T[numy - 2, :]) / DY  # Backward dfference at j = numy
     q_y = -1 * k * dT_dy
     return q_y
 
@@ -200,17 +200,26 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     # There are four cases -> Before plate, on plate, inlet, outlet/outlet
     # Case 4 -> Outlet: Temperature is calculated based on extrapolation from adjacent interior points,
     # Density is computed from equation of state
-    u[1:numy - 1, numx] = 2 * u[1:numy - 1, numx - 1] - u[1:numy - 1, numx - 2]
-    v[1:numy - 1, numx] = 2 * v[1:numy - 1, numx - 1] - v[1:numy - 1, numx - 2]
-    p[1:numy - 1, numx] = 2 * p[1:numy - 1, numx - 1] - p[1:numy - 1, numx - 2]
-    T[1:numy - 1, numx] = 2 * T[1:numy - 1, numx - 1] - T[1:numy - 1, numx - 2]
-    rho[1:numy - 1, numx] = p[1:numy - 1, numx] / (R * T[1:numy - 1, numx])
+    u[1:numy - 2, numx - 1] = 2 * u[1:numy - 2, numx - 2] - u[1:numy - 2, numx - 3]
+    v[1:numy - 2, numx - 1] = 2 * v[1:numy - 2, numx - 2] - v[1:numy - 2, numx - 3]
+    p[1:numy - 2, numx - 1] = 2 * p[1:numy - 2, numx - 2] - p[1:numy - 2, numx - 3]
+    T[1:numy - 2, numx - 1] = 2 * T[1:numy - 2, numx - 2] - T[1:numy - 2, numx - 3]
+    rho[1:numy - 2, numx - 1] = p[1:numy - 2, numx - 1] / (R * T[1:numy - 2, numx - 1])
+    # v[1:numy - 1, numx] = 2 * v[1:numy - 1, numx - 1] - v[1:numy - 1, numx - 2]
+    # p[1:numy - 1, numx] = 2 * p[1:numy - 1, numx - 1] - p[1:numy - 1, numx - 2]
+    # T[1:numy - 1, numx] = 2 * T[1:numy - 1, numx - 1] - T[1:numy - 1, numx - 2]
+    # rho[1:numy - 1, numx] = p[1:numy - 1, numx] / (R * T[1:numy - 1, numx])
     # Outlet on upper boundary
-    u[1:numy, 0] = u_inf
-    v[1:numy, 0] = 0
-    p[1:numy, 0] = p_inf
-    T[1:numy, 0] = T_inf
-    rho[1:numy, 1] = rho_inf
+    u[numy - 1, 1: numx - 1] = u_inf
+    v[numy - 1, 1: numx - 1] = 0
+    p[numy - 1, 1: numx - 1] = p_inf
+    T[numy - 1, 1: numx - 1] = T_inf
+    rho[numy - 1, 1:numx - 1] = rho_inf
+    # u[1:numy, 0] = u_inf
+    # v[1:numy, 0] = 0
+    # p[1:numy, 0] = p_inf
+    # T[1:numy, 0] = T_inf
+    # rho[1:numy, 1] = rho_inf
     for i in range(numx):
         # Before Plate free stream
         if x[i] > 0:
@@ -223,7 +232,7 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
         if x[i] <= 0:
             u[0, i] = 0
             v[0, i] = 0
-            p[0, i] = 2 * p(1, i) - p(2, i)
+            p[0, i] = 2 * p[1, i] - p[2, i]
             T[0, i] = T_w_T_inf * T_inf
             rho[0, i] = p[0, i] / (R * T[0, i])
     # Case 3 - > Free stream for inlet
@@ -273,8 +282,8 @@ time = 0  # Initial time (s)
 dt = 1e-2  # time step
 
 # Define Domain
-num_x = 65  # Number of X points
-num_y = 65  # Number of Y points
+num_x = 20  # Number of X points
+num_y = 20  # Number of Y points
 x_end = 0.3048  # Final Point in x
 x_start = 0.05  # First point in x (absolute value, shifted to left on x axis)
 y_end = 0.05  # Final Point in y
@@ -370,12 +379,16 @@ while not converged and t <= MAXIT:
             U3_p[j, i] = U3[j, i] - dt * ((E3[j, i + 1] - E3[j, i]) / dx[i] + (F3[j + 1, i] - F3[j, i]) / dy[j])
             U5_p[j, i] = U5[j, i] - dt * ((E5[j, i + 1] - E5[j, i]) / dx[i] + (F5[j + 1, i] - F5[j, i]) / dy[j])
 
-    # Preduct flow field variables needed for calculations
-    rho_p[1:num_y - 1, 1:num_x - 1], u_p[1:num_y - 1, 1:num_x - 1], v_p[1:num_y - 1, 1:num_x - 1],
-    T_p[1:num_y - 1, 1:num_x - 1] = U2Primitive(U1_p[1:num_y - 1, 1:num_x - 1], U2_p[1:num_y - 1, 1:num_x - 1],
-                                                U3_p[1:num_y - 1, 1:num_x - 1], U5_p[1:num_y - 1, 1:num_x - 1], c_v)
+    # Predict flow field variables needed for calculations
+    for i in range(1, num_x - 1):
+        for j in range(1, num_y - 1):
+            rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] - U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i],
+                                                                       c_v)
+        # rho_p[1:num_y - 2, 1:num_x - 2], u_p[1:num_y - 2, 1:num_x - 2], v_p[1:num_y - 2, 1:num_x - 2],
+        # T_p[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1_p[1:num_y - 2, 1:num_x - 2], U2_p[1:num_y - 2, 1:num_x - 2],
+        #                                             U3_p[1:num_y - 2, 1:num_x - 2], U5_p[1:num_y - 2, 1:num_x - 2], c_v)
     # Calculate pressure with ideal gas law
-    p_p[1:num_y - 1, 1:num_x - 1] = rho_p[1:num_y - 1, 1:num_x - 1] * R * T_p[1:num_y - 1, 1:num_x - 1]
+    p_p[1:num_y - 2, 1:num_x - 2] = rho_p[1:num_y - 2, 1:num_x - 2] * R * T_p[1:num_y - 2, 1:num_x - 2]
 
     # Apply Boundary Conditions
     rho_p, u_p, v_p, p_inf, T_p = BC(rho_p, u_p, v_p, p_p, T_p, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, x)
