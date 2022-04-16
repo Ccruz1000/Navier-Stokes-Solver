@@ -279,8 +279,8 @@ def main():
 		P_XL,   P_XR,   P_YL,   P_YR   = extrapolateInSpaceToFace(P_prime,   P_dx,   P_dy,   dx)
 		
 		# compute inviscid fluxes (local Lax-Friedrichs/Rusanov)
-		invflux_Mass_X, invflux_Momx_X, invflux_Momy_X, invflux_Energy_X = getInvFlux(rho_XL, rho_XR, vx_XL, vx_XR, vy_XL, vy_XR, P_XL, P_XR, gamma)
-		invflux_Mass_Y, invflux_Momy_Y, invflux_Momx_Y, invflux_Energy_Y = getInvFlux(rho_YL, rho_YR, vy_YL, vy_YR, vx_YL, vx_YR, P_YL, P_YR, gamma)
+		flux_Mass_X, flux_Momx_X, flux_Momy_X, flux_Energy_X = getFlux(rho_XL, rho_XR, vx_XL, vx_XR, vy_XL, vy_XR, P_XL, P_XR, gamma)
+		flux_Mass_Y, flux_Momy_Y, flux_Momx_Y, flux_Energy_Y = getFlux(rho_YL, rho_YR, vy_YL, vy_YR, vx_YL, vx_YR, P_YL, P_YR, gamma)
 		
 		# update inviscid solution
 		Mass   = applyFluxes(Mass, flux_Mass_X, flux_Mass_Y, dx, dt)
