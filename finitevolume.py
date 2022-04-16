@@ -144,9 +144,18 @@ def applyFluxes(F, flux_F_X, flux_F_Y, dx, dt):
 
 def getFlux(rho_L, rho_R, vx_L, vx_R, vy_L, vy_R, P_L, P_R, gamma):
 	"""
-    Calculate fluxed between 2 states with local Lax-Friedrichs/Rusanov rule 
+    Calculate inviscid fluxed between 2 states with local Lax-Friedrichs/Rusanov rule
 	rho_L        is a matrix of left-state  density
 	rho_R        is a matrix of right-state density
+	tau_L        is a matrix of left-state  normal stress
+	tau_R        is a matrix of right-state normal stress
+	taus_L       is a matrix of left-state  shear stress
+	taus_R       is a matrix of right-state shear stress
+	k        	 is the thermal conductive heat coefficient
+	q_L          is a matrix of left-state heat flux
+	q_R          is a matrix of right-state heat flux
+	T_L          is a matrix of left-state temperature
+	T_R          is a matrix of right-state temperature
 	vx_L         is a matrix of left-state  x-velocity
 	vx_R         is a matrix of right-state x-velocity
 	vy_L         is a matrix of left-state  y-velocity
@@ -159,30 +168,34 @@ def getFlux(rho_L, rho_R, vx_L, vx_R, vy_L, vy_R, P_L, P_R, gamma):
 	flux_Momy    is the matrix of y-momentum fluxes
 	flux_Energy  is the matrix of energy fluxes
 	"""
-	
+
 	# left and right energies
 	en_L = P_L/(gamma-1)+0.5*rho_L * (vx_L**2+vy_L**2)
 	en_R = P_R/(gamma-1)+0.5*rho_R * (vx_R**2+vy_R**2)
+	env_L = q_L - vx_L * tau_L - vy_L * taus_L
+	env_R = q_R - vx_R * tau_R - vy_R * taus_R
 
 	# compute star (averaged) states
 	rho_star  = 0.5*(rho_L + rho_R)
 	momx_star = 0.5*(rho_L * vx_L + rho_R * vx_R)
 	momy_star = 0.5*(rho_L * vy_L + rho_R * vy_R)
-	en_star   = 0.5*(en_L + en_R)
-	
+	en_star = 0.5*(en_L + en_R)
+	env_star = 0.5*(env_L + env_R)
+	tau_star = 0.5 * (-tau_L + -tau_R)
+	taus_star = 0.5 * (-taus_L + -taus_R)
 	P_star = (gamma-1)*(en_star-0.5*(momx_star**2+momy_star**2)/rho_star)
-	
-	# compute fluxes (local Lax-Friedrichs/Rusanov)
+
+	# compute inviscid fluxes (local Lax-Friedrichs/Rusanov)
 	flux_Mass   = momx_star
-	flux_Momx   = momx_star**2/rho_star + P_star
-	flux_Momy   = momx_star * momy_star/rho_star
-	flux_Energy = (en_star+P_star) * momx_star/rho_star
-	
+	flux_Momx   = (momx_star**2/rho_star + P_star) + tau_star
+	flux_Momy   = (momx_star * momy_star/rho_star) + taus_star
+	flux_Energy = ((en_star+P_star) * momx_star/rho_star) + env_star
+
 	# find wavespeeds
 	C_L = np.sqrt(gamma*P_L/rho_L) + np.abs(vx_L)
 	C_R = np.sqrt(gamma*P_R/rho_R) + np.abs(vx_R)
 	C = np.maximum( C_L, C_R )
-	
+
 	# add stabilizing diffusive term
 	flux_Mass   -= C * 0.5 * (rho_L - rho_R)
 	flux_Momx   -= C * 0.5 * (rho_L * vx_L - rho_R * vx_R)
@@ -190,8 +203,6 @@ def getFlux(rho_L, rho_R, vx_L, vx_R, vy_L, vy_R, P_L, P_R, gamma):
 	flux_Energy -= C * 0.5 * ( en_L - en_R )
 
 	return flux_Mass, flux_Momx, flux_Momy, flux_Energy
-
-
 
 
 def main():
@@ -267,11 +278,11 @@ def main():
 		vy_XL,  vy_XR,  vy_YL,  vy_YR  = extrapolateInSpaceToFace(vy_prime,  vy_dx,  vy_dy,  dx)
 		P_XL,   P_XR,   P_YL,   P_YR   = extrapolateInSpaceToFace(P_prime,   P_dx,   P_dy,   dx)
 		
-		# compute fluxes (local Lax-Friedrichs/Rusanov)
-		flux_Mass_X, flux_Momx_X, flux_Momy_X, flux_Energy_X = getFlux(rho_XL, rho_XR, vx_XL, vx_XR, vy_XL, vy_XR, P_XL, P_XR, gamma)
-		flux_Mass_Y, flux_Momy_Y, flux_Momx_Y, flux_Energy_Y = getFlux(rho_YL, rho_YR, vy_YL, vy_YR, vx_YL, vx_YR, P_YL, P_YR, gamma)
+		# compute inviscid fluxes (local Lax-Friedrichs/Rusanov)
+		invflux_Mass_X, invflux_Momx_X, invflux_Momy_X, invflux_Energy_X = getInvFlux(rho_XL, rho_XR, vx_XL, vx_XR, vy_XL, vy_XR, P_XL, P_XR, gamma)
+		invflux_Mass_Y, invflux_Momy_Y, invflux_Momx_Y, invflux_Energy_Y = getInvFlux(rho_YL, rho_YR, vy_YL, vy_YR, vx_YL, vx_YR, P_YL, P_YR, gamma)
 		
-		# update solution
+		# update inviscid solution
 		Mass   = applyFluxes(Mass, flux_Mass_X, flux_Mass_Y, dx, dt)
 		Momx   = applyFluxes(Momx, flux_Momx_X, flux_Momx_Y, dx, dt)
 		Momy   = applyFluxes(Momy, flux_Momy_X, flux_Momy_Y, dx, dt)
