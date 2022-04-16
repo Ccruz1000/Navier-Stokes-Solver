@@ -87,14 +87,6 @@ def fir_o_back_x2d(dx, u, N):
     return dudx1
 
 
-
-
-
-
-
-
-
-
 #First order accurate central difference
 def fir_o_cen_y(dy,u,N):
     N = u.shape[0]
@@ -115,14 +107,6 @@ def fir_o_cen_x(dx,u,N):
         dudx[i] = (u[i+1]-u[i-1]) / (2*dx)
 
     return dudx
-
-
-
-
-
-
-
-
 
 ##############################################################Three point scheme#######################
 
@@ -147,14 +131,6 @@ def three_for_first_x(dx,u,N):
         dudx[i] = (-3*u[i]+4*u[i+1]-u[i+2]) / (2*dx)
 
     return dudx
-
-
-
-
-
-
-
-
 
 #Three point backward difference for first derivative
 
