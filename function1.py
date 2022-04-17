@@ -1,5 +1,5 @@
 import numpy as np
-
+delta_t_CFL = 1/(np.abs(u[1:num_y-2,1:num_x-2])/dx + np.abs(v[1:num_y-2,1:num_x-2])/dy + np.sqrt(gamma*R*T[1:num_y-2,1:num_x-2])*sqrt(1/dx**2 + 1/dy**2) + 2*v_prime*(1/dx**2 + 1/dy**2))
 #################################################Two point scheme##########################
 
 #First order accurate forward difference
