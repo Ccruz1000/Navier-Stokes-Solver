@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import time
 
 
 def ddxb(f, dx):
@@ -126,7 +127,7 @@ def calculateF(primitives, dx, dy, direction):
         ValueError("direction not allowed")
     dudx = ddxc(u, dx)
     dvdx = ddxc(v, dx)
-    tyy = lam * (dudx + dvdy) + 2 * mu * (dvdy)
+    tyy = lam * (dudx + dvdy) + 2 * mu * dvdy
     txy = mu * (dudy + dvdx)
     qy = -k * dTdy
     F = np.zeros(np.shape(r, 1), np.shape(r, 2), 4)
@@ -171,10 +172,67 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     # mesh data
     ny, nx = np.shape(x)
     dx = x[0, 1] - x[0, 0]
-    dy = y(1, 0) - y(0, 0)
+    dy = y[1, 0] - y[0, 0]
     inX = 1, nx - 2  # interior x
     inY = 1, ny - 2  # interior y
 
+    # set boundary conditions
+    primitives = updateBoundaryConditions(primitives, inflow, Tw_Tinf)
+
+    # time march
+    i = 0
+    converged = False
+
+    while not converged and i < maxiter:
+        start_time = time.time()
+        i = i + 1
+
+        # time step size
+        dt = primitives.calculateTimeStep(dx, dy, K)
+
+        # solution vector
+        U = calculateU(primitives)
+
+        # flux vectors
+        E = calculateE(primitives, dx, dy, 'backward')
+        F = calculateF(primitives, dx, dy, 'backward')
+
+        # forward finite difference predictor
+        dUdt_predictor = -ddxf(E, dx) - ddyf(F, dy)
+
+        # Predictor step and corrector vector calculations
+        U2 = U
+        U2[inY, inX,:] = U[inY, inX,:] + dt * dUdt_predictor[inY, inX,:]  # interior points only
+        primitives2 = decodeSolutionVector(U2)
+        E2 = calculateE(primitives2, dx, dy, 'forward')
+        F2 = calculateF(primitives2, dx, dy, 'forward')
+
+        # backward finite difference corrector
+        dUdt_corrector = -ddxb(E2, dx) - ddyb(F2, dy)
+
+        # MacCormack solution step
+        dUdt = 0.5 * (dUdt_predictor + dUdt_corrector)
+        U[inY, inX,:] = U[inY, inX,:] + dt * dUdt[inY, inX,:]  # interior points only
+        primitives = decodeSolutionVector(U)
+        primitives = updateBoundaryConditions(primitives, inflow, Tw_Tinf)
+
+        # check density convergence
+        rCurrent = primitives.r
+        if i > 1:
+            deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
+            if deltaR < 1e-8:
+                converged = true
+            # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
+        rLast = rCurrent
+    runtime = time.time() - start_time
+
+    # Mass Flow Check
+    massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
+    massOut = np.trapz(y[:, -1], primitives.u[:, -1] * primitives.r[:, -1])
+    massDiffCheck = 100 * abs(massIn - massOut) / massIn
+    # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
+    # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
+    return primitives, massDiffCheck, converged, i, runtime
 
 # Plate length
 lhori = 0.00001  # m
