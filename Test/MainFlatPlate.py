@@ -109,7 +109,7 @@ def calculateE(primitives, dx, dy, direction):
 def calculateF(primitives, dx, dy, direction):
     [u, v, p, T] = primitives.deal()
     [mu, lam, k] = primitives.getMuLambdaK()
-    r = primitives.r;
+    r = primitives.r
     Et = primitives.Et
     if direction == "forward":
 
@@ -126,10 +126,10 @@ def calculateF(primitives, dx, dy, direction):
         ValueError("direction not allowed")
     dudx = ddxc(u, dx)
     dvdx = ddxc(v, dx)
-    tyy = lam * (dudx + dvdy) + 2 * mu * (dvdy);
-    txy = mu * (dudy + dvdx);
+    tyy = lam * (dudx + dvdy) + 2 * mu * (dvdy)
+    txy = mu * (dudy + dvdx)
     qy = -k * dTdy
-    F = np.zeros(np.shape(r, 1), np.shape(r, 2), 4);
+    F = np.zeros(np.shape(r, 1), np.shape(r, 2), 4)
     F[:, :, 0] = r * v
     F[:, :, 1] = r * u * v - txy
     F[:, :, 2] = r * v ** 2 + p - tyy
