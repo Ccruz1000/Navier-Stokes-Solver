@@ -7,7 +7,7 @@ def ddxb(f, dx):
     [ny, nx, n3] = np.shape(f)
     inX = [1, nx - 1]
     dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX, :] = (f[:, inX , :] - f[:, inX-1, :]) / dx
+    dfdx[:, inX, :] = (f[:, inX, :] - f[:, inX - 1, :]) / dx
     dfdx[:, 0, :] = dfdx[:, 1, :]
 
     return dfdx
@@ -17,7 +17,7 @@ def ddxc(f, dx):
     [ny, nx] = np.shape(f)
     inX = (1, nx - 2)
     dfdx = np.zeros(ny, nx)
-    dfdx[:, inX ] = (f[:, inX+1] - f[:, inX - 1]) / (2 * dx)
+    dfdx[:, inX] = (f[:, inX + 1] - f[:, inX - 1]) / (2 * dx)
     dfdx[:, 0] = (f[:, 1] - f[:, 0]) / (dx);
     dfdx[:, nx - 1] = (f[:, nx - 1] - f[:, nx - 2]) / (dx)
 
@@ -28,7 +28,7 @@ def ddxf(f, dx):
     [ny, nx, n3] = np.shape(f)
     inX = [0, nx - 2]
     dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX , :] = (f[:, inX+1, :] - f[:, inX , :]) / dx
+    dfdx[:, inX, :] = (f[:, inX + 1, :] - f[:, inX, :]) / dx
     dfdx[:, nx - 1, :] = dfdx[:, nx - 2, :]
 
     return dfdx
@@ -38,7 +38,7 @@ def ddyb(f, dy):
     [ny, nx, n3] = np.shape(f)
     inY = [1, ny - 1]
     dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY , :, :] = (f[inY , :, :] - f[inY - 1, :, :]) / dy
+    dfdy[inY, :, :] = (f[inY, :, :] - f[inY - 1, :, :]) / dy
     dfdy[0, :, :] = dfdy[1, :, :]
 
     return dfdy
@@ -48,7 +48,7 @@ def ddyc(f, dy):
     [ny, nx] = np.shape(f)
     inY = [1, ny - 2]
     dfdy = np.zeros(ny, nx)
-    dfdy[inY , :] = (f[inY+1, :] - f[inY - 1, :]) / (2 * dy)
+    dfdy[inY, :] = (f[inY + 1, :] - f[inY - 1, :]) / (2 * dy)
     dfdy[0, :] = (f[1, :] - f[0, :]) / (dy)
     dfdy[ny - 1, :] = (f[ny - 1, :] - f[ny - 2, :]) / (dy)
     return dfdy
@@ -58,10 +58,52 @@ def ddyf(f, dy):
     [ny, nx, n3] = np.shape(f)
     inY = [0, ny - 2]
     dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY, :, :] = (f[inY+1, :, :] - f[inY , :, :]) / dy
+    dfdy[inY, :, :] = (f[inY + 1, :, :] - f[inY, :, :]) / dy
     dfdy[ny - 1, :, :] = dfdy[ny - 2, :, :]
     return dfdy
 
+
+# Calculate E flux array from primitive variables
+# To maintain second-order accuracy, the x-derivative terms appearing in E
+# are differenced in the opposite direction to that used for dE/dx, while
+# the y-derivative terms are approximated using central differences.
+# Likewise, the y-derivative terms appearing in F are differenced in the
+# opposite direction to that used for dF/dy, while the x-derivative terms
+# in F are central differenced
+
+def calculateE(primitives, dx, dy, direction):
+    # primitives
+    [u, v, p, T] = primitives.deal()
+    [mu, lam, k] = primitives.getMuLambdaK()
+    r = primitives.r
+    Et = primitives.Et
+
+    # gradients
+    if direction == 'forward':
+        dudx = ddxf(u, dx)
+        dvdx = ddxf(v, dx)
+        dTdx = ddxf(T, dx)
+    elif direction == 'backward':
+        dudx = ddxb(u, dx)
+        dvdx = ddxb(v, dx)
+        dTdx = ddxb(T, dx)
+    else:
+        ValueError('direction not allowed')
+    dudy = ddyc(u, dy)
+    dvdy = ddyc(v, dy)
+
+    # stresses and heat fluxes
+    txx = lam * (dudx + dvdy) + 2 * mu * dudx
+    # tyy = lam * (dudx + dvdy)+ 2 * mu * dvdy
+    txy = mu * (dudy + dvdx)
+    qx = -k * dTdx
+
+    E = np.zeros(np.size(r, 1), np.size(r, 2), 4)
+    E[:, :, 0] = r * u
+    E[:, :, 1] = r * u ** 2 + p - txx
+    E[:, :, 2] = r * u * v - txy
+    E[:, :, 3] = (Et + p) * u - u * txx - v * txy + qx
+    return E
 
 # Plate length
 lhori = 0.00001  # m
