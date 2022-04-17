@@ -248,6 +248,38 @@ def decodeSolutionVector(U):
     return primitives
 
 
+def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
+    [u, v, p, T] = primitivesIn.deal()
+    [Vinf, [], pinf, Tinf] = inflow.deal()
+    u[:, 0] = Vinf
+    v[:, 0] = 0
+    p[:, 0] = pinf
+    T[:, 0] = Tinf
+
+    u[-1, :] = Vinf;
+    v[-1, :] = 0;
+    p[-1, :] = pinf;
+    T[-1, :] = Tinf
+
+    u[:, -1] = 2 * u[:, -2] - u[:, -3]
+    v[:, -1] = 2 * v[:, -2] - v[:, -3]
+    p[:, -1] = 2 * p[:, -2] - p[:, -3]
+    T[:, -1] = 2 * T[:, -2] - T[:, -3]
+    u[0, :] = 0;
+    v[0, :] = 0;
+    p[0, :] = 2 * p[1, :] - p[2, :]
+
+    if (Tw_Tinf > 0):
+        T[0, :] = Tinf * Tw_Tinf
+    else:
+        T[0, :] = T[1, :]
+
+    u[0, 0] = 0
+    v[0, 0] = 0
+    p[0, 0] = pinf
+    T[0, 0] = Tinf
+    primitivesOut = Primitives(u, v, p, T)
+    return primitivesOut
 # Plate length
 lhori = 0.00001  # m
 
