@@ -383,15 +383,13 @@ while not converged and t <= MAXIT:
             U5_p[j, i] = U5[j, i] - dt * ((E5[j, i + 1] - E5[j, i]) / dx[i] + (F5[j + 1, i] - F5[j, i]) / dy[j])
 
     # Predict flow field variables needed for calculations
-    for i in range(1, num_x - 1):
-        for j in range(1, num_y - 1):
+    # Calculate pressure with ideal gas law
+    for i in range(1, num_x - 2):
+        for j in range(1, num_y - 2):
             rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] - U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i],
                                                                        c_v)
-        # rho_p[1:num_y - 2, 1:num_x - 2], u_p[1:num_y - 2, 1:num_x - 2], v_p[1:num_y - 2, 1:num_x - 2],
-        # T_p[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1_p[1:num_y - 2, 1:num_x - 2], U2_p[1:num_y - 2, 1:num_x - 2],
-        #                                             U3_p[1:num_y - 2, 1:num_x - 2], U5_p[1:num_y - 2, 1:num_x - 2], c_v)
-    # Calculate pressure with ideal gas law
-    p_p[1:num_y - 2, 1:num_x - 2] = rho_p[1:num_y - 2, 1:num_x - 2] * R * T_p[1:num_y - 2, 1:num_x - 2]
+            p_p[j, i] = rho_p[j, i] * R * T_p[j, i]
+
 
     # Apply Boundary Conditions
     rho_p, u_p, v_p, p_p, T_p = BC(rho_p, u_p, v_p, p_p, T_p, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, x)
