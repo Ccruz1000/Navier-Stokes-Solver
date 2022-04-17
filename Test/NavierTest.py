@@ -196,7 +196,30 @@ def U2Primitive(U1, U2, U3, U5, c_v):
 
 # Apply Boundary conditions
 def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
-    numx, numy = np.shape(rho)
+    numy, numx = np.shape(rho)
+
+
+    # Case 1:
+    T[0, 0] = T_inf
+    p[0, 0] = p_inf
+    rho[0, 0] = rho_inf
+
+    # Case 2:
+
+    u[1: numy-1, 0] = u_inf
+    # v(1: numy-1, 0) = 0
+    p[1: numy-1, 0] = p_inf
+    T[1: numy-1, 0] = T_inf
+    rho[1: numy-1, 0] = rho_inf
+
+    # For Upper boundary
+
+    u[numy-1, 1: numx-1] = u_inf
+    # v[numy-1, 1: numx-1] = 0
+    p[numy-1, 1: numx-1] = p_inf
+    T[numy-1, 1: numx-1] = T_inf
+    rho[numy-1, 1: numx-1] = rho_inf
+
     # There are four cases -> Before plate, on plate, inlet, outlet/outlet
     # Case 4 -> Outlet: Temperature is calculated based on extrapolation from adjacent interior points,
     # Density is computed from equation of state
@@ -205,42 +228,17 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     p[1:numy - 2, numx - 1] = 2 * p[1:numy - 2, numx - 2] - p[1:numy - 2, numx - 3]
     T[1:numy - 2, numx - 1] = 2 * T[1:numy - 2, numx - 2] - T[1:numy - 2, numx - 3]
     rho[1:numy - 2, numx - 1] = p[1:numy - 2, numx - 1] / (R * T[1:numy - 2, numx - 1])
-    # v[1:numy - 1, numx] = 2 * v[1:numy - 1, numx - 1] - v[1:numy - 1, numx - 2]
-    # p[1:numy - 1, numx] = 2 * p[1:numy - 1, numx - 1] - p[1:numy - 1, numx - 2]
-    # T[1:numy - 1, numx] = 2 * T[1:numy - 1, numx - 1] - T[1:numy - 1, numx - 2]
-    # rho[1:numy - 1, numx] = p[1:numy - 1, numx] / (R * T[1:numy - 1, numx])
-    # Outlet on upper boundary
-    u[numy - 1, 1: numx - 1] = u_inf
-    # v[numy - 1, 1: numx - 1] = 0
-    p[numy - 1, 1: numx - 1] = p_inf
-    T[numy - 1, 1: numx - 1] = T_inf
-    rho[numy - 1, 1:numx - 1] = rho_inf
-    # u[1:numy, 0] = u_inf
-    # v[1:numy, 0] = 0
-    # p[1:numy, 0] = p_inf
-    # T[1:numy, 0] = T_inf
-    # rho[1:numy, 1] = rho_inf
-    for i in range(numx):
-        # Before Plate free stream
-        if x[i] > 0:
-            u[0, i] = u_inf
-            v[0, i] = 0
-            p[0, i] = p_inf
-            T[0, i] = T_inf
-            rho[0, i] = rho_inf
-        # Case 2 - > On Plate
-        if x[i] <= 0:
-            u[0, i] = 0
-            v[0, i] = 0
-            p[0, i] = 2 * p[1, i] - p[2, i]
-            T[0, i] = T_w_T_inf * T_inf
-            rho[0, i] = p[0, i] / (R * T[0, i])
+
     # Case 3 - > Free stream for inlet
-    u[1:numy-1, 0] = u_inf
-    v[1:numy-1, 0] = 0
-    p[1:numy-1, 0] = p_inf
-    T[1:numy-1, 0] = T_inf
-    rho[1:numy-1, 0] = rho_inf
+
+    if np.all(x):
+        T[0, 1: numx-1] = T[1, 1: numx-1]
+    else:
+        T[0, 1: numx-1] = T_w_T_inf * T_inf
+
+    p[0, 1: numx-1] = 2 * p[1, 1: numx-1] - p[2, 1: numx-1]
+    rho[0, 1: numx-1] = p[0, 1: numx-1] / (R * T[0, 1:numx-1])
+
     return rho, u, v, p, T
 
 
@@ -386,13 +384,12 @@ while not converged and t <= MAXIT:
     # Calculate pressure with ideal gas law
     for i in range(1, num_x - 2):
         for j in range(1, num_y - 2):
-            rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] - U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i],
-                                                                       c_v)
+            rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] - U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i], c_v)
             p_p[j, i] = rho_p[j, i] * R * T_p[j, i]
 
 
     # Apply Boundary Conditions
-    rho_p, u_p, v_p, p_p, T_p = BC(rho_p, u_p, v_p, p_p, T_p, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, x)
+    rho_p, u_p, v_p, p_p, T_p = BC(rho_p, u_p, v_p, p_p, T_p, rho_inf, M_inf * a_inf, p_inf, T_inf, T_w_T_inf, R, False)
     # for remaining properties
     mu_p = DYNVIS(T_p, mu_0, T_0)
     lam_p = -2 / 3 * mu_p
