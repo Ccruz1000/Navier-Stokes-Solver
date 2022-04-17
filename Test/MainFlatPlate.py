@@ -136,6 +136,14 @@ def calculateF(primitives, dx, dy, direction):
     F[:, :, 3] = (Et + p) * v - u * txy - v * tyy + qy
 
     return F
+
+def calculateU(primitives):
+    U = np.zeros(np.shape(primitives.u,1),np.shape(primitives.u,2),4);
+    U[:,:,0] = primitives.r
+    U[:,:,1] = U[:,:,1]*primitives.u
+    U[:,:,2] = U[:,:,1]*primitives.v
+    U[:,:,3] = primitives.Et
+    return U
 # Plate length
 lhori = 0.00001  # m
 
