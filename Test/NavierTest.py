@@ -247,7 +247,7 @@ def CONVER(rho_old, rho):
     # time steps is lower than 1e-14
     if not np.isreal(np.all(rho)):
         raise ValueError('The calculation has failed. A complex number has been detected')
-    elif max(max(abs(rho_old - rho))) < 1e-8:
+    elif np.max(np.max(np.abs(rho_old - rho))) < 1e-8:
         converged = True
     else:
         converged = False
@@ -255,17 +255,18 @@ def CONVER(rho_old, rho):
 
 
 # Check validity of numerical solution by confirming conservation of mass
-def MDOT(rho, u, rho_inf, u_inf, y_end, DY, y):
-    m_dot_in = -rho_inf * u_inf * (y_end - DY) - DY * rho_inf * u_inf / 2
-    numx, numy = np.shape(rho)
-    for j in range(numy):
-        m_dot_out = np.trapz(y, rho[:, numx] * u[:, numx])
-    deviation = abs((m_dot_in + m_dot_out) / m_dot_in) * 100
-    if deviation < 1:
-        continuity = True
-    else:
-        continuity = False
-    return continuity
+# def MDOT(rho, u, rho_inf, u_inf, y_end, DY):
+#     m_dot_in = -rho_inf * u_inf * (y_end - DY) - DY * rho_inf * u_inf / 2
+#     numx = np.size([rho, 2])
+#     y = 0, dy, y_end
+#     m_dot_out = np.trapz(y, rho[:, numx-1] * u[:, numx-1])
+#
+#     deviation = np.abs((m_dot_in + m_dot_out) / m_dot_in) * 100
+#     if deviation < 1:
+#         continuity = True
+#     else:
+#         continuity = False
+#     return continuity
 
 
 
@@ -413,15 +414,22 @@ while not converged and t <= MAXIT:
                     F3_p[j, i] - F3_p[j - 1, i]) / dy[j]))
             U5[j, i] = 1 / 2 * (U5[j, i] + U5_p[j, i] - dt * ((E5_p[j, i] - E5_p[j, i - 1]) / dx[i] + (
                     F5_p[j, i] - F5_p[j - 1, i]) / dy[j]))
+
     # Finally decode flow variables
-    rho[1:num_y - 2, 1:num_x - 2], u[1:num_y - 2, 1:num_x - 2], v[1:num_y - 2, 1:num_x - 2], \
-    T[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1[1:num_y - 2, 1:num_x - 2], U2[1:num_y - 2, 1:num_x - 2],
-                                              U3[1:num_y - 2, 1:num_x - 2], U5[1:num_y - 2, 1:num_x - 2], c_v)
-    # Use ideal gas law to calculate pressure
-    p[1:num_y - 2, 1:num_x - 2] = rho[1:num_y - 2, 1:num_x - 2] * R * T[1:num_y - 2, 1:num_x - 2]
+    for i in range(1, num_x - 2):
+        for j in range(1, num_y - 2):
+            rho[j, i], u[j, i], v[j, i], T[j, i] = U2Primitive(U1[j, i], U2[j, i], U3[j, i], U5[j, i], c_v)
+            p[j, i] = rho[j, i] * R * T[j, i]
+
+
+    # rho[1:num_y - 2, 1:num_x - 2], u[1:num_y - 2, 1:num_x - 2], v[1:num_y - 2, 1:num_x - 2], \
+    # T[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1[1:num_y - 2, 1:num_x - 2], U2[1:num_y - 2, 1:num_x - 2],
+    #                                           U3[1:num_y - 2, 1:num_x - 2], U5[1:num_y - 2, 1:num_x - 2], c_v)
+    # # Use ideal gas law to calculate pressure
+    # p[1:num_y - 2, 1:num_x - 2] = rho[1:num_y - 2, 1:num_x - 2] * R * T[1:num_y - 2, 1:num_x - 2]
 
     # Apply Boundary Conditions
-    rho, u, v, p, T = BC(rho, u, v, p, T, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, x)
+    rho, u, v, p, T = BC(rho, u, v, p, T, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, False)
     # Finally for remaining properties
     mu = DYNVIS(T, mu_0, T_0)
     lam = -2 / 3 * mu
@@ -435,16 +443,16 @@ while not converged and t <= MAXIT:
     # Change time
     time = time + dt
     t = t + 1
-if (converged):
-    for j in range(num_y):
-        continuity = MDOT(rho, u, rho_inf, M_inf * a_inf, y_end, dy[j], y)
-else:
-    raise ValueError('Calculation Failed: The max number of iterations has been reached before '
-                     'achieving continuity')
-if continuity:
-    print('The calculation has finished succesfully')
-else:
-    raise ValueError('The solution has converged to an invalid result')
+# if converged:
+#     for j in range(len(dy)):
+#         continuity = MDOT(rho, u, rho_inf, M_inf * a_inf, y_end, dy[j])
+# else:
+#     raise ValueError('Calculation Failed: The max number of iterations has been reached before '
+#                      'achieving continuity')
+# if continuity:
+#     print('The calculation has finished succesfully')
+# else:
+#     raise ValueError('The solution has converged to an invalid result')
 
 M = np.sqrt(u ** 2 + v ** 2) / np.sqrt(gamma * R * T)
 plt.figure(1)
