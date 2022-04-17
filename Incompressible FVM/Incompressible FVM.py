@@ -5,6 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 def build_up_b(rho, dt, dx, dy, u, v):
     b = numpy.zeros_like(u)
+    #periodic boundary over the entire domain of x apart from first and last point
     b[1:-1, 1:-1] = (rho * (1 / dt * ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx) +
                                       (v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy)) -
                             ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx)) ** 2 -
@@ -74,15 +75,14 @@ x = numpy.linspace(0, 2, nx)
 y = numpy.linspace(0, 2, ny)
 X, Y = numpy.meshgrid(x, y)
 
-
 ##physical variables
-rho = 1
+rho = 1.225
 nu = .1
 F = 1
 dt = .01
 u_inf = 1
-rho_inf = 1.225
 p_inf = 101325
+T_inf = 288.16
 
 #initial conditions
 u = numpy.zeros((ny, nx))
@@ -184,12 +184,12 @@ while udiff > .001:
             u[0, i] = u_inf
             v[0, i] = 0
             p[0, i] = p_inf
-            rho[0, i] = rho_inf
+
+
         if x[i] <= 0:
             u[0, i] = 0
             v[0, i] = 0
             p[0, i] = 2 * p[1, i] - p[2, i]
-            rho[0, i] = rho_inf
 
     # Wall BC: u,v = 0 @ y = 0,2
     u[-1, :] = 0
@@ -198,6 +198,7 @@ while udiff > .001:
     udiff = (numpy.sum(u) - numpy.sum(un)) / numpy.sum(u)
     stepcount += 1
     #print(stepcount)
+
 fig = pyplot.figure(figsize=(11, 7), dpi=100)
 pyplot.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3]);
 
