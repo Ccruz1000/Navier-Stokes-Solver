@@ -4,6 +4,7 @@ import numpy as np
 # Import Packages
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import scipy
 
 
@@ -242,16 +243,16 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
 
 
 # Check convergence
-def CONVER(rho_old, rho):
-    # Check for a converged solution. The converged criterion is that the change in density between
-    # time steps is lower than 1e-14
-    if not np.isreal(np.all(rho)):
-        raise ValueError('The calculation has failed. A complex number has been detected')
-    elif np.max(np.max(np.abs(rho_old - rho))) < 1e-8:
-        converged = True
-    else:
-        converged = False
-    return converged
+# def CONVER(rho_old, rho):
+#     # Check for a converged solution. The converged criterion is that the change in density between
+#     # time steps is lower than 1e-14
+#     if not np.isreal(np.all(rho)):
+#         raise ValueError('The calculation has failed. A complex number has been detected')
+#     elif np.max(np.max(np.abs(rho_old - rho))) < 1e-8:
+#         converged = False
+#     else:
+#         converged = False
+#     return converged
 
 
 # Check validity of numerical solution by confirming conservation of mass
@@ -274,7 +275,7 @@ def CONVER(rho_old, rho):
 M_inf = 4  # Free stream mach number
 T_inf = 288.16  # Free stream temperature (K)
 p_inf = 101325  # Free stream pressure (pa)
-MAXIT = 1e4  # Number of time steps allowed before stopping program
+MAXIT = 100  # Number of time steps allowed before stopping program
 t = 1  # Time step counter
 time = 0  # Initial time (s)
 dt = 1e-2  # time step
@@ -353,8 +354,8 @@ p_p = np.zeros((num_y, num_x))
 converged = False
 rho_old = rho
 
-while not converged and t <= MAXIT:
-
+while t <= MAXIT:
+    print(t)
     # Time step needed to satisfy CFL stability criterion
     v_prime = np.max(np.max(4 / 3 * mu[1:num_y - 2, 1: num_x - 2] ** 2 * gamma / (Pr * rho[1:num_y - 2, 1:num_x-2])))
     delta_t_CFL = 1/(np.abs(u[1:num_y-2,1:num_x-2])/dx[1:num_y-2] + np.abs(v[1:num_y-2,1:num_x-2])/dy[1:num_x-2] + np.sqrt(gamma*R*T[1:num_y-2,1:num_x-2])*np.sqrt(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2) + 2*v_prime*(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2))
@@ -438,8 +439,8 @@ while not converged and t <= MAXIT:
     # This is the end of the corrector step. The flow field properties are known at each grid point for t + 1
 
     # Check convergence
-    converged = CONVER(rho_old, rho)
-    rho_old = rho
+    # converged = CONVER(rho_old, rho)
+    # rho_old = rho
     # Change time
     time = time + dt
     t = t + 1
@@ -455,14 +456,20 @@ while not converged and t <= MAXIT:
 #     raise ValueError('The solution has converged to an invalid result')
 
 M = np.sqrt(u ** 2 + v ** 2) / np.sqrt(gamma * R * T)
-plt.figure(1)
-plt.contour(X, Y, M)
-plt.title('Mach Contour')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.colorbar()
-plt.show()
 
+# Mach Contour Plotting
+# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+# surf = ax.plot_surface(X, Y, M, cmap=cm.coolwarm,
+#                        linewidth=0, antialiased=False)
+# fig.colorbar(surf, shrink=0.5, aspect=5)
+#
+# plt.plot_surface(X, Y, M)
+# plt.title('Mach Contour')
+# plt.xlabel('X')
+# plt.ylabel('Y')
+# plt.colorbar()
+
+# Cavity Flow Plotting
 fig = plt.figure(figsize=(11,7), dpi=100)
 # plotting the pressure field as a contour
 plt.contourf(X, Y, M, alpha=0.5, cmap=cm.viridis)
