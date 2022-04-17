@@ -98,23 +98,23 @@ def TAUXY(u, v, lam, mu, DX, DY, call_case):
 # Calculate normal stress in Y direction
 def TAUYY(u, v, lam, mu, DX, DY, call_case):
     # Initialize arrays
-    numx, numy = np.shape(v)
+    numy, numx = np.shape(v)
     du_dx = np.zeros_like(v)
     dv_dy = np.zeros_like(v)
     # Calculate dv_dy
     if call_case == 'Predict_F':
-        for i in range(0, numx):
-            for j in range(1, numy):
+        for i in range(0, numx-1):
+            for j in range(1, numy-1):
                 dv_dy[j, i] = (v[j, i] - v[j - 1, i]) / DY  # Backward difference
         dv_dy[0, :] = (v[1, :] - v[0, :]) / DY  # Forward difference at j = 0
     elif call_case == 'Correct_F':
-        for i in range(0, numx):
-            for j in range(0, numy - 1):
+        for i in range(0, numx-1):
+            for j in range(0, numy - 2):
                 dv_dy[j, i] = (v[j + 1, i] - v[j, i]) / DY  # Forward difference
         dv_dy[numy - 1, :] = (v[numy - 1, :] - v[numy - 2, :]) / DY  # Backward difference at j = numy
     # Calculate du_dx
-    for i in range(1, numx - 1):
-        for j in range(0, numy):
+    for i in range(1, numx - 2):
+        for j in range(0, numy-1):
             du_dx[j, i] = (u[j, i + 1] - u[j, i - 1]) / (2 * DX)  # Central difference
     du_dx[:, 0] = (u[:, 1] - u[:, 0]) / DX  # Forward difference at i = 1
     du_dx[:, numx - 1] = (u[:, numx - 1] - u[:, numx - 2]) / DX  # Backward difference at i = numx
