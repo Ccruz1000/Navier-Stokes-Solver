@@ -48,7 +48,7 @@ def TAUXX(u, v, lam, mu, DX, DY, call_case):
 
 
 # Calculate normal stress in X-Y direction
-def TAUXY(u, v, lam, mu, DX, DY, call_case):
+def TAUXY(u, v, mu, DX, DY, call_case):
     num_y, num_x  = np.shape(u)
     # Initialize arrays
     du_dy = np.zeros_like(u)
@@ -166,7 +166,7 @@ def Primitive2E(rho, u, p, v, T, mu, lam, k, c_v, dx, dy, call_case):
     E1 = rho * u  # Continuity
     tau_xx = TAUXX(u, v, lam, mu, dx, dy, call_case)
     E2 = rho * u ** 2 + p - tau_xx  # X-momentum
-    tau_xy = TAUXY(u, v, lam, mu, dx, dy, call_case)
+    tau_xy = TAUXY(u, v, mu, dx, dy, call_case)
     E3 = rho * u * v - tau_xy  # Y-momentum
     q_x = QX(T, k, dx, call_case)
     E5 = (rho * (c_v * T + (u ** 2 + v ** 2) / 2) + p) * u - u * tau_xx - v * tau_xy + q_x  # From energy
@@ -176,7 +176,7 @@ def Primitive2E(rho, u, p, v, T, mu, lam, k, c_v, dx, dy, call_case):
 # Calculate flux vector F from primitive flow field variables
 def Primitive2F(rho, u, p, v, T, mu, lam, k, c_v, DX, DY, call_case):
     F1 = rho * v  # Continuity
-    tau_yx = TAUXY(u, v, lam, mu, DX, DY, call_case)
+    tau_yx = TAUXY(u, v, mu, DX, DY, call_case)
     F2 = rho * u * v - tau_yx  # From X-momentum
     tau_yy = TAUYY(u, v, lam, mu, DX, DY, call_case)
     F3 = rho * v ** 2 + p - tau_yy  # Y-momentum
@@ -197,7 +197,6 @@ def U2Primitive(U1, U2, U3, U5, c_v):
 # Apply Boundary conditions
 def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     numy, numx = np.shape(rho)
-
 
     # Case 1:
     T[0, 0] = T_inf
@@ -246,9 +245,9 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
 def CONVER(rho_old, rho):
     # Check for a converged solution. The converged criterion is that the change in density between
     # time steps is lower than 1e-14
-    if not np.isreal(rho):
+    if not np.isreal(np.all(rho)):
         raise ValueError('The calculation has failed. A complex number has been detected')
-    elif(max(max(abs(rho_old - rho)))) < 1e-8:
+    elif max(max(abs(rho_old - rho))) < 1e-8:
         converged = True
     else:
         converged = False
