@@ -269,7 +269,7 @@ def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
     v[0, :] = 0
     p[0, :] = 2 * p[1, :] - p[2, :]
 
-    if (Tw_Tinf > 0):
+    if Tw_Tinf > 0:
         T[0, :] = Tinf * Tw_Tinf
     else:
         T[0, :] = T[1, :]
@@ -280,6 +280,8 @@ def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
     T[0, 0] = Tinf
     primitivesOut = Primitives(u, v, p, T)
     return primitivesOut
+
+
 # Plate length
 lhori = 0.00001  # m
 
