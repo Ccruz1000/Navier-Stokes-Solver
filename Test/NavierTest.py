@@ -403,16 +403,16 @@ while not converged and t <= MAXIT:
             F1_p, F2_p, F3_p, F5_p = Primitive2F(rho_p, u_p, p_p, v_p, T_p, mu_p, lam_p, k_p, c_v, dx[i], dy[j],
                                                  'Correct_F')
     # Now we can predict flow field properties at next step for interior points using backwards differencing
-    for i in range(1, num_x - 1):
-        for j in range(1, num_y - 1):
-            U1[j, i] = 1/2 * (U1[j, i] + U1_p[j, i] - dt * (E1_p[j, i] - E1_p[j, i - 1]) / dx[i] + (
-                    F1_p[j, i] - F1_p[j - 1, i]) / dy[j])
-            U2[j, i] = 1 / 2 * (U2[j, i] + U2_p[j, i] - dt * (E2_p[j, i] - E2_p[j, i - 1]) / dx[i] + (
-                    F2_p[j, i] - F2_p[j - 1, i]) / dy[j])
-            U3[j, i] = 1 / 2 * (U3[j, i] + U3_p[j, i] - dt * (E3_p[j, i] - E3_p[j, i - 1]) / dx[i] + (
-                    F3_p[j, i] - F3_p[j - 1, i]) / dy[j])
-            U5[j, i] = 1 / 2 * (U5[j, i] + U5_p[j, i] - dt * (E5_p[j, i] - E5_p[j, i - 1]) / dx[i] + (
-                    F5_p[j, i] - F5_p[j - 1, i]) / dy[j])
+    for i in range(1, num_x - 2):
+        for j in range(1, num_y - 2):
+            U1[j, i] = 1/2 * (U1[j, i] + U1_p[j, i] - dt * ((E1_p[j, i] - E1_p[j, i - 1]) / dx[i] + (
+                    F1_p[j, i] - F1_p[j - 1, i]) / dy[j]))
+            U2[j, i] = 1 / 2 * (U2[j, i] + U2_p[j, i] - dt * ((E2_p[j, i] - E2_p[j, i - 1]) / dx[i] + (
+                    F2_p[j, i] - F2_p[j - 1, i]) / dy[j]))
+            U3[j, i] = 1 / 2 * (U3[j, i] + U3_p[j, i] - dt * ((E3_p[j, i] - E3_p[j, i - 1]) / dx[i] + (
+                    F3_p[j, i] - F3_p[j - 1, i]) / dy[j]))
+            U5[j, i] = 1 / 2 * (U5[j, i] + U5_p[j, i] - dt * ((E5_p[j, i] - E5_p[j, i - 1]) / dx[i] + (
+                    F5_p[j, i] - F5_p[j - 1, i]) / dy[j]))
     # Finally decode flow variables
     rho[1:num_y - 2, 1:num_x - 2], u[1:num_y - 2, 1:num_x - 2], v[1:num_y - 2, 1:num_x - 2], \
     T[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1[1:num_y - 2, 1:num_x - 2], U2[1:num_y - 2, 1:num_x - 2],
