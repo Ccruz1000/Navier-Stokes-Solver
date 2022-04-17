@@ -7,7 +7,7 @@ def ddxb(f, dx):
     [ny, nx, n3] = np.shape(f)
     inX = [1, nx - 1]
     dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX - 1, :] = (f[:, inX - 1, :] - f[:, inX - 1, :]) / dx
+    dfdx[:, inX, :] = (f[:, inX , :] - f[:, inX-1, :]) / dx
     dfdx[:, 0, :] = dfdx[:, 1, :]
 
     return dfdx
@@ -17,7 +17,7 @@ def ddxc(f, dx):
     [ny, nx] = np.shape(f)
     inX = (1, nx - 2)
     dfdx = np.zeros(ny, nx)
-    dfdx[:, inX - 1] = (f[:, inX] - f[:, inX - 2]) / (2 * dx)
+    dfdx[:, inX ] = (f[:, inX+1] - f[:, inX - 1]) / (2 * dx)
     dfdx[:, 0] = (f[:, 1] - f[:, 0]) / (dx);
     dfdx[:, nx - 1] = (f[:, nx - 1] - f[:, nx - 2]) / (dx)
 
@@ -28,7 +28,7 @@ def ddxf(f, dx):
     [ny, nx, n3] = np.shape(f)
     inX = [0, nx - 2]
     dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX - 1, :] = (f[:, inX, :] - f[:, inX - 1, :]) / dx
+    dfdx[:, inX , :] = (f[:, inX+1, :] - f[:, inX , :]) / dx
     dfdx[:, nx - 1, :] = dfdx[:, nx - 2, :]
 
     return dfdx
@@ -38,7 +38,7 @@ def ddyb(f, dy):
     [ny, nx, n3] = np.shape(f)
     inY = [1, ny - 1]
     dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY - 1, :, :] = (f[inY - 1, :, :] - f[inY - 2, :, :]) / dy
+    dfdy[inY , :, :] = (f[inY , :, :] - f[inY - 1, :, :]) / dy
     dfdy[0, :, :] = dfdy[1, :, :]
 
     return dfdy
@@ -48,7 +48,7 @@ def ddyc(f, dy):
     [ny, nx] = np.shape(f)
     inY = [1, ny - 2]
     dfdy = np.zeros(ny, nx)
-    dfdy[inY - 1, :] = (f[inY, :] - f[inY - 2, :]) / (2 * dy)
+    dfdy[inY , :] = (f[inY+1, :] - f[inY - 1, :]) / (2 * dy)
     dfdy[0, :] = (f[1, :] - f[0, :]) / (dy)
     dfdy[ny - 1, :] = (f[ny - 1, :] - f[ny - 2, :]) / (dy)
     return dfdy
@@ -58,7 +58,7 @@ def ddyf(f, dy):
     [ny, nx, n3] = np.shape(f)
     inY = [0, ny - 2]
     dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY - 1, :, :] = (f[inY, :, :] - f[inY - 1, :, :]) / dy
+    dfdy[inY, :, :] = (f[inY+1, :, :] - f[inY , :, :]) / dy
     dfdy[ny - 1, :, :] = dfdy[ny - 2, :, :]
     return dfdy
 
