@@ -25,6 +25,7 @@ def getConserved( rho, vx, vy, P, gamma, vol ):
 	Momy     is matrix of y-momentum in cells
 	Energy   is matrix of energy in cells
 	"""
+
 	Mass   = rho * vol
 	Momx   = rho * vx * vol
 	Momy   = rho * vy * vol
