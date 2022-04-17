@@ -9,7 +9,7 @@ import scipy
 
 # Calculate viscosity based on Sutherlands Law
 def DYNVIS(T, mu_0, T0):
-    mu = mu_0 * (T / T0) ** (3 / 2) * ((T0 + 110) / (T + 110))
+    mu = mu_0 * (T / T0) ** (3 / 2) * (T0 + 110) / (T + 110)
     return mu
 
 
@@ -383,7 +383,7 @@ while not converged and t <= MAXIT:
     # Calculate pressure with ideal gas law
     for i in range(1, num_x - 2):
         for j in range(1, num_y - 2):
-            rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] - U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i], c_v)
+            rho_p[j, i], u_p[j, i], v_p[j, i], T_p[j, i] = U2Primitive(U1_p[j, i], U2_p[j, i], U3_p[j, i], U5_p[j, i], c_v)
             p_p[j, i] = rho_p[j, i] * R * T_p[j, i]
 
 
