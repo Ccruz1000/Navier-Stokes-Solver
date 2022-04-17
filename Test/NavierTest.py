@@ -145,16 +145,16 @@ def QX(T, k, DX, call_case):
 # Calculate y component of heat flux vector
 def QY(T, k, DY, call_case):
     # Initialize arrays
-    numx, numy = np.shape(T)
+    numy, numx = np.shape(T)
     dT_dy = np.zeros_like(T)
     if call_case == 'Predict_F':
-        for i in range(0, numx, ):
-            for j in range(1, numy):
+        for i in range(0, numx-1):
+            for j in range(1, numy-1):
                 dT_dy[j, i] = (T[j, i] - T[j - 1, i]) / DY  # Backward difference
         dT_dy[0, :] = (T[1, :] - T[0, :]) / DY  # Forward difference at j = 1
     elif call_case == 'Correct_F':
-        for i in range(0, numx):
-            for j in range(0, numy - 1):
+        for i in range(0, numx-1):
+            for j in range(0, numy - 2):
                 dT_dy[j, i] = (T[j + 1, i] - T[j, i]) / DY  # Forward difference
         dT_dy[numy - 1, :] = (T[numy - 1, :] - T[numy - 2, :]) / DY  # Backward dfference at j = numy
     q_y = -1 * k * dT_dy
