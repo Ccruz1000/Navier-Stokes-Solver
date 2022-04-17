@@ -137,13 +137,30 @@ def calculateF(primitives, dx, dy, direction):
 
     return F
 
+
 def calculateU(primitives):
-    U = np.zeros(np.shape(primitives.u,1),np.shape(primitives.u,2),4);
-    U[:,:,0] = primitives.r
-    U[:,:,1] = U[:,:,1]*primitives.u
-    U[:,:,2] = U[:,:,1]*primitives.v
-    U[:,:,3] = primitives.Et
+    U = np.zeros(np.shape(primitives.u, 1), np.shape(primitives.u, 2), 4)
+    U[:, :, 0] = primitives.r
+    U[:, :, 1] = U[:, :, 0] * primitives.u
+    U[:, :, 2] = U[:, :, 0] * primitives.v
+    U[:, :, 3] = primitives.Et
     return U
+
+
+# Calculate primitive variables from solution vector
+def decodeSolutionVector(U):
+    r = U[:, :, 0]
+    u = U[:, :, 1] / r
+    v = U[:, :, 2] / r
+    Et = U[:, :, 3]
+    e = Et / r - 0.5 * (u ** 2 + v ** 2)
+    cv = Primitives.R / (Primitives.gm - 1)
+    T = e / cv
+    p = r * Primitives.R * T
+    primitives = Primitives(u, v, p, T)
+    return primitives
+
+
 # Plate length
 lhori = 0.00001  # m
 
