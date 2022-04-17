@@ -9,7 +9,7 @@ import scipy
 
 # Calculate viscosity based on Sutherlands Law
 def DYNVIS(T, mu_0, T0):
-    mu = mu_0 * (T / T0) ** (3 / 2) * (T0 + 110) / (T + 110)
+    mu = mu_0 * (T / T0) ** (3 / 2) * ((T0 + 110) / (T + 110))
     return mu
 
 
@@ -49,46 +49,46 @@ def TAUXX(u, v, lam, mu, DX, DY, call_case):
 
 # Calculate normal stress in X-Y direction
 def TAUXY(u, v, lam, mu, DX, DY, call_case):
-    num_x, num_y = np.shape(u)
+    num_y, num_x  = np.shape(u)
     # Initialize arrays
     du_dy = np.zeros_like(u)
     dv_dx = np.zeros_like(u)
     # Calculate derivative of u wrt x and v wrt to y
     # Calculate du_dy
     if call_case == 'Predict_E' or 'Correct_E':
-        for i in range(0, num_x):
-            for j in range(1, num_y - 1):
+        for i in range(0, num_x-1):
+            for j in range(1, num_y - 2):
                 du_dy[j, i] = (u[j + 1, i] - u[j - 1, i]) / (2 * DY)  # Backward differencing
         du_dy[0, :] = (u[1, :] - u[0, :]) / DY  # Forward difference at j = 0
         du_dy[num_y - 1, :] = (u[num_y - 1, :] - u[num_y - 2, :]) / DY  # Backward at j = numy
         # The calculation of dv_dx is different for each case
         if call_case == 'Predict_E':
-            for i in range(1, num_x):
-                for j in range(0, num_y):
-                    dv_dx[j, i] = (v[j, i] - u[j, i - 1]) / DX  # Backward differencing
-            dv_dx[:, 0] = (v[:, 1] - u[:, 0]) / DX  # Forward difference at i = 0
+            for i in range(1, num_x-1):
+                for j in range(0, num_y-1):
+                    dv_dx[j, i] = (v[j, i] - v[j, i - 1]) / DX  # Backward differencing
+            dv_dx[:, 0] = (v[:, 1] - v[:, 0]) / DX  # Forward difference at i = 0
         else:
-            for i in range(0, num_x - 1):
-                for j in range(0, num_y):
-                    dv_dx[i, j] = (v[j, i + 1] - v[j, i]) / DX  # Forward difference
+            for i in range(0, num_x - 2):
+                for j in range(0, num_y-1):
+                    dv_dx[j, i] = (v[j, i + 1] - v[j, i]) / DX  # Forward difference
                 dv_dx[:, num_x - 1] = (v[:, num_x - 1] - v[:, num_x - 2]) / DX  # Backward difference at i = numx
-    if call_case == 'Predict_F' or 'Correct_F':
+    elif call_case == 'Predict_F' or 'Correct_F':
         # The calculation of dv_dx is the same for both cases
-        for i in range(1, num_x - 1):
-            for j in range(1, num_y):
+        for i in range(1, num_x - 2):
+            for j in range(0, num_y-1):
                 dv_dx[j, i] = (v[j, i + 1] - v[j, i - 1]) / (2 * DX)  # Central Difference
-        dv_dx[:, 0] = (v[:, 1] - v[:, 1]) / DX  # Forward difference at i = 1
+        dv_dx[:, 0] = (v[:, 1] - v[:, 0]) / DX  # Forward difference at i = 1
         dv_dx[:, num_x - 1] = (v[:, num_x - 1] - v[:, num_x - 2]) / DX  # Backward differance at i = numx
 
         # The calculation of du_dy is different for each case
         if call_case == 'Predict_F':
-            for i in range(0, num_x):
-                for j in range(1, num_y):
+            for i in range(0, num_x-1):
+                for j in range(1, num_y-1):
                     du_dy[j, i] = (u[j, i] - u[j - 1, i]) / DY  # Backward difference
                 du_dy[0, :] = (u[1, :] - u[0, :]) / DY  # Forward at j = 1
         else:
-            for i in range(0, num_x):
-                for j in range(0, num_y - 1):
+            for i in range(0, num_x-1):
+                for j in range(0, num_y - 2):
                     du_dy[j, i] = (u[j + 1, i] - u[j, i]) / DY  # Forward difference
                 du_dy[num_y - 1, :] = (u[num_y - 1, :] - u[num_y - 2, :]) / DY  # Backward difference at j = numy
     tau_xy = mu * (du_dy + dv_dx)
@@ -211,7 +211,7 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     # rho[1:numy - 1, numx] = p[1:numy - 1, numx] / (R * T[1:numy - 1, numx])
     # Outlet on upper boundary
     u[numy - 1, 1: numx - 1] = u_inf
-    v[numy - 1, 1: numx - 1] = 0
+    # v[numy - 1, 1: numx - 1] = 0
     p[numy - 1, 1: numx - 1] = p_inf
     T[numy - 1, 1: numx - 1] = T_inf
     rho[numy - 1, 1:numx - 1] = rho_inf
@@ -327,38 +327,41 @@ c_v = R / (gamma - 1)  # Specific heat at constant volume
 c_p = gamma * c_v  # Specific heat at constant pressure
 rho_inf = p_inf / (R * T_inf)  # Free stream density (kg/m^3)
 Re = rho_inf * M_inf * a_inf * x_end / DYNVIS(T_inf, mu_0, T_0)
-
+CFL = 0.6 # Courant-Friedrichs-Lewy number (should be between 0.5 and 0.8)
 # Define initial conditions
-p = np.ones((num_x, num_y)) * p_inf  # Initialize pressure to be ambient pressure
-rho = np.ones((num_x, num_y)) * rho_inf  # Initialize density to be ambient density
-T = np.ones((num_x, num_y)) * T_inf  # Initialize temperature to be ambient temperature
-u = np.ones((num_x, num_y)) * M_inf * a_inf  # Initialize u velocity array
-v = np.zeros((num_x, num_y))  # Initialize v velocity array
-for i in range(num_x):
-    if x[i] > 0:
-        T[0, i] = T_w_T_inf * T_inf  # Constant wall temperature boundary condition
-        u[0, i] = 0  # No slip boundary condition
+p = np.ones((num_y, num_x)) * p_inf  # Initialize pressure to be ambient pressure
+rho = np.ones((num_y, num_x)) * rho_inf  # Initialize density to be ambient density
+T = np.ones((num_y, num_x)) * T_inf  # Initialize temperature to be ambient temperature
+u = np.ones((num_y, num_x)) * M_inf * a_inf  # Initialize u velocity array
+u[0, :] = 0  # No slip boundary condition
+v = np.zeros((num_y, num_x))  # Initialize v velocity array
+T[0, :] = T_w_T_inf * T_inf  # Constant wall temperature boundary condition
 mu = DYNVIS(T, mu_0, T_0)  # Initialize dynamic viscosity
 lam = - 2 / 3 * mu  # Second viscosity (based on Stokes' Hypothesis [kg/m*S]
 k = THERMC(Pr, c_p, mu)
 
 # Other required variables
-U1_p = np.zeros((num_x, num_y))
-U2_p = np.zeros((num_x, num_y))
-U3_p = np.zeros((num_x, num_y))
-U5_p = np.zeros((num_x, num_y))
-rho_p = np.zeros((num_x, num_y))
-u_p = np.zeros((num_x, num_y))
-v_p = np.zeros((num_x, num_y))
-T_p = np.zeros((num_x, num_y))
-p_p = np.zeros((num_x, num_y))
+U1_p = np.zeros((num_y, num_x))
+U2_p = np.zeros((num_y, num_x))
+U3_p = np.zeros((num_y, num_x))
+U5_p = np.zeros((num_y, num_x))
+rho_p = np.zeros((num_y, num_x))
+u_p = np.zeros((num_y, num_x))
+v_p = np.zeros((num_y, num_x))
+T_p = np.zeros((num_y, num_x))
+p_p = np.zeros((num_y, num_x))
 
 # Begin loop
 converged = False
 rho_old = rho
 
 while not converged and t <= MAXIT:
-    print(t)
+
+    # Time step needed to satisfy CFL stability criterion
+    v_prime = np.max(np.max(4 / 3 * mu[1:num_y - 2, 1: num_x - 2] ** 2 * gamma / (Pr * rho[1:num_y - 2, 1:num_x-2])))
+    delta_t_CFL = 1/(np.abs(u[1:num_y-2,1:num_x-2])/dx[1:num_y-2] + np.abs(v[1:num_y-2,1:num_x-2])/dy[1:num_x-2] + np.sqrt(gamma*R*T[1:num_y-2,1:num_x-2])*np.sqrt(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2) + 2*v_prime*(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2))
+    dt = CFL * np.min(np.min(delta_t_CFL))
+
     # Apply MacCormack's Technique to compute solution vector U
     U1 = rho  # Continuity
     U2 = rho * u  # X-momentum
@@ -372,8 +375,8 @@ while not converged and t <= MAXIT:
             F1, F2, F3, F5 = Primitive2F(rho, u, p, v, T, mu, lam, k, c_v, dx[i], dy[j], 'Predict_F')
 
     # Predict flow field properties at next time step for interior points using forward difference
-    for i in range(1, num_x - 1):
-        for j in range(1, num_y - 1):
+    for i in range(1, num_x - 2):
+        for j in range(1, num_y - 2):
             U1_p[j, i] = U1[j, i] - dt * ((E1[j, i + 1] - E1[j, i]) / dx[i] + (F1[j + 1, i] - F1[j, i]) / dy[j])
             U2_p[j, i] = U2[j, i] - dt * ((E2[j, i + 1] - E2[j, i]) / dx[i] + (F2[j + 1, i] - F2[j, i]) / dy[j])
             U3_p[j, i] = U3[j, i] - dt * ((E3[j, i + 1] - E3[j, i]) / dx[i] + (F3[j + 1, i] - F3[j, i]) / dy[j])
