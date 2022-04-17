@@ -137,30 +137,45 @@ def calculateF(primitives, dx, dy, direction):
 
     return F
 
+
 def calculateU(primitives):
-    U = np.zeros(np.shape(primitives.u,1),np.shape(primitives.u,2),4);
-    U[:,:,0] = primitives.r
-    U[:,:,1] = U[:,:,0]*primitives.u
-    U[:,:,2] = U[:,:,0]*primitives.v
-    U[:,:,3] = primitives.Et
+    U = np.zeros(np.shape(primitives.u, 1), np.shape(primitives.u, 2), 4)
+    U[:, :, 0] = primitives.r
+    U[:, :, 1] = U[:, :, 0] * primitives.u
+    U[:, :, 2] = U[:, :, 0] * primitives.v
+    U[:, :, 3] = primitives.Et
     return U
 
-def postStressAndHeatFlux(primitives,x,y):
-    dx = x[0,1]-x[0,0]
-    dy = y[1,0]-y[0,0]
-    [u,v,[],T] = primitives.deal()
-    [mu,lam,k] = primitives.getMuLambdaK()
-    dudx = ddxc(u,dx)
-    dudy = ddyc(u,dy)
-    dvdx = ddxc(v,dx)
-    dvdy = ddyc(v,dy)
-    txx = lam*(dudx + dvdy)+ 2*mu*(dudx)
-    tyy = lam*(dudx + dvdy)+ 2*mu*(dvdy)
-    txy = mu*(dudy + dvdx)
-    dTdx = ddxc(T,dx)
-    dTdy = ddyc(T,dy)
-    qx = -k*dTdx
-    qy = -k*dTdy
+
+def postStressAndHeatFlux(primitives, x, y):
+    dx = x[0, 1] - x[0, 0]
+    dy = y[1, 0] - y[0, 0]
+    [u, v, [], T] = primitives.deal()
+    [mu, lam, k] = primitives.getMuLambdaK()
+    dudx = ddxc(u, dx)
+    dudy = ddyc(u, dy)
+    dvdx = ddxc(v, dx)
+    dvdy = ddyc(v, dy)
+    txx = lam * (dudx + dvdy) + 2 * mu * dudx
+    tyy = lam * (dudx + dvdy) + 2 * mu * dvdy
+    txy = mu * (dudy + dvdx)
+    dTdx = ddxc(T, dx)
+    dTdy = ddyc(T, dy)
+    qx = -k * dTdx
+    qy = -k * dTdy
+    return txx, tyy, txy, qx, qy
+
+
+# Solve Navier-Stokes equations for supersonic flow over a flat plate using MacCormack method.
+def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
+    # mesh data
+    ny, nx = np.shape(x)
+    dx = x[0, 1] - x[0, 0]
+    dy = y(1, 0) - y(0, 0)
+    inX = 1, nx - 2  # interior x
+    inY = 1, ny - 2  # interior y
+
+
 # Plate length
 lhori = 0.00001  # m
 
