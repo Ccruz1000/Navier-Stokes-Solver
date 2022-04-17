@@ -105,6 +105,37 @@ def calculateE(primitives, dx, dy, direction):
     E[:, :, 3] = (Et + p) * u - u * txx - v * txy + qx
     return E
 
+
+def calculateF(primitives, dx, dy, direction):
+    [u, v, p, T] = primitives.deal()
+    [mu, lam, k] = primitives.getMuLambdaK()
+    r = primitives.r;
+    Et = primitives.Et
+    if direction == "forward":
+
+        dudy = ddyf(u, dy)
+        dvdy = ddyf(v, dy)
+        dTdy = ddyf(T, dy)
+
+    elif direction == "backward":
+        dudy = ddyf(u, dy)
+        dvdy = ddyf(v, dy)
+        dTdy = ddyf(T, dy)
+
+    else:
+        ValueError("direction not allowed")
+    dudx = ddxc(u, dx)
+    dvdx = ddxc(v, dx)
+    tyy = lam * (dudx + dvdy) + 2 * mu * (dvdy);
+    txy = mu * (dudy + dvdx);
+    qy = -k * dTdy
+    F = np.zeros(np.shape(r, 1), np.shape(r, 2), 4);
+    F[:, :, 0] = r * v
+    F[:, :, 1] = r * u * v - txy
+    F[:, :, 2] = r * v ** 2 + p - tyy
+    F[:, :, 3] = (Et + p) * v - u * txy - v * tyy + qy
+
+    return F
 # Plate length
 lhori = 0.00001  # m
 
