@@ -354,7 +354,7 @@ converged = False
 rho_old = rho
 
 while not converged and t <= MAXIT:
-
+    print(t)
     # Time step needed to satisfy CFL stability criterion
     v_prime = np.max(np.max(4 / 3 * mu[1:num_y - 2, 1: num_x - 2] ** 2 * gamma / (Pr * rho[1:num_y - 2, 1:num_x-2])))
     delta_t_CFL = 1/(np.abs(u[1:num_y-2,1:num_x-2])/dx[1:num_y-2] + np.abs(v[1:num_y-2,1:num_x-2])/dy[1:num_x-2] + np.sqrt(gamma*R*T[1:num_y-2,1:num_x-2])*np.sqrt(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2) + 2*v_prime*(1/dx[1:num_y-2]**2 + 1/dy[1:num_x-2]**2))
