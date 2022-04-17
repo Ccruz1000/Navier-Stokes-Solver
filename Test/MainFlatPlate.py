@@ -98,7 +98,7 @@ def calculateE(primitives, dx, dy, direction):
     txy = mu * (dudy + dvdx)
     qx = -k * dTdx
 
-    E = np.zeros(np.size(r, 1), np.size(r, 2), 4)
+    E = np.zeros(np.shape(r, 1), np.shape(r, 2), 4)
     E[:, :, 0] = r * u
     E[:, :, 1] = r * u ** 2 + p - txx
     E[:, :, 2] = r * u * v - txy
