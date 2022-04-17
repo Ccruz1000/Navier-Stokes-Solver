@@ -421,7 +421,7 @@ while not converged and t <= MAXIT:
     T[1:num_y - 2, 1:num_x - 2] = U2Primitive(U1[1:num_y - 2, 1:num_x - 2], U2[1:num_y - 2, 1:num_x - 2],
                                               U3[1:num_y - 2, 1:num_x - 2], U5[1:num_y - 2, 1:num_x - 2], c_v)
     # Use ideal gas law to calculate pressure
-    p[1:num_y - 1, 1:num_x - 1] = rho[1:num_y - 1, 1:num_x - 1] * R * T[1:num_y - 1, 1:num_x - 1]
+    p[1:num_y - 2, 1:num_x - 2] = rho[1:num_y - 2, 1:num_x - 2] * R * T[1:num_y - 2, 1:num_x - 2]
 
     # Apply Boundary Conditions
     rho, u, v, p, T = BC(rho, u, v, p, T, rho_inf, M_inf*a_inf, p_inf, T_inf, T_w_T_inf, R, x)
@@ -457,4 +457,3 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.colorbar()
 plt.show()
-
