@@ -202,7 +202,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
 
         # Predictor step and corrector vector calculations
         U2 = U
-        U2[inY, inX,:] = U[inY, inX,:] + dt * dUdt_predictor[inY, inX,:]  # interior points only
+        U2[inY, inX, :] = U[inY, inX, :] + dt * dUdt_predictor[inY, inX, :]  # interior points only
         primitives2 = decodeSolutionVector(U2)
         E2 = calculateE(primitives2, dx, dy, 'forward')
         F2 = calculateF(primitives2, dx, dy, 'forward')
@@ -212,7 +212,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
 
         # MacCormack solution step
         dUdt = 0.5 * (dUdt_predictor + dUdt_corrector)
-        U[inY, inX,:] = U[inY, inX,:] + dt * dUdt[inY, inX,:]  # interior points only
+        U[inY, inX, :] = U[inY, inX, :] + dt * dUdt[inY, inX, :]  # interior points only
         primitives = decodeSolutionVector(U)
         primitives = updateBoundaryConditions(primitives, inflow, Tw_Tinf)
 
@@ -221,7 +221,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
         if i > 1:
             deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
             if deltaR < 1e-8:
-                converged = true
+                converged = True
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
     runtime = time.time() - start_time
@@ -233,6 +233,20 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
     # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
     return primitives, massDiffCheck, converged, i, runtime
+
+
+def decodeSolutionVector(U):
+    r = U[:, :, 0]
+    u = U[:, :, 1] / r
+    v = U[:, :, 2] / r
+    Et = U[:, :, 3]
+    e = Et / r - .5 * (u ** 2 + v ** 2)
+    cv = Primitives.R / (Primitives.gm - 1)
+    T = e / cv
+    p = r * Primitives.R * T
+    primitives = Primitives(u, v, p, T)
+    return primitives
+
 
 # Plate length
 lhori = 0.00001  # m
