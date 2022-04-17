@@ -21,25 +21,25 @@ def THERMC(Pr, c_p, mu):
 
 # Calculate x-direction of normal stress
 def TAUXX(u, v, lam, mu, DX, DY, call_case):
-    num_x, num_y = np.shape(u)
+    num_y, num_x = np.shape(u)
     # Initialize arrays
     du_dx = np.zeros_like(u)
     dv_dy = np.zeros_like(u)
     # Calculate derivative of u wrt x and v wrt to y
     # Calculate du_dx
     if call_case == 'Predict_E':
-        for i in range(1, num_x):
-            for j in range(0, num_y):
+        for i in range(1, num_x-1):
+            for j in range(0, num_y-1):
                 du_dx[j, i] = (u[j, i] - u[j, i - 1]) / DX  # Backward differencing
         du_dx[:, 0] = (u[:, 1] - u[:, 0]) / DX  # Forward difference at i = 0
     elif call_case == 'Correct_E':
-        for i in range(0, num_x - 1):
-            for j in range(0, num_y):
+        for i in range(0, num_x - 2):
+            for j in range(0, num_y-1):
                 du_dx[j, i] = (u[j, i + 1] - u[j, i]) / DX  # Forward differencing
         du_dx[:, num_x - 1] = (u[:, num_x - 1] - u[:, num_x - 2]) / DX  # Backward difference at i = numx
     # Compute dv_dy
-    for i in range(0, num_x):
-        for j in range(1, num_y - 1):
+    for i in range(0, num_x-1):
+        for j in range(1, num_y - 2):
             dv_dy[j, i] = (v[j + 1, i] - v[j - 1, i]) / (2 * DY)  # Central difference
         dv_dy[0, :] = (v[1, :] - v[0, :]) / DY  # Forward at i = 0
         dv_dy[num_y - 1, :] = (v[num_y - 1, :] - v[num_y - 2, :]) / DY  # Backward at j = numy
@@ -126,16 +126,16 @@ def TAUYY(u, v, lam, mu, DX, DY, call_case):
 # Calculate x component of heat flux vector
 def QX(T, k, DX, call_case):
     # Initialize arrays
-    numx, numy = np.shape(T)
+    numy, numx = np.shape(T)
     dT_dx = np.zeros_like(T)
     if call_case == 'Predict_E':
-        for i in range(1, numx):
-            for j in range(1, numy):
+        for i in range(1, numx-1):
+            for j in range(0, numy-1):
                 dT_dx[j, i] = (T[j, i] - T[j, i - 1]) / DX  # Backward difference
         dT_dx[:, 0] = (T[:, 1] - T[:, 0]) / DX  # Forward difference at i = 1
     elif call_case == 'Correct_E':
-        for i in range(0, numx - 1):
-            for j in range(0, numy):
+        for i in range(0, numx - 2):
+            for j in range(0, numy-1):
                 dT_dx[j, i] = (T[j, i + 1] - T[j, i]) / DX  # Forward difference
         dT_dx[:, numx - 1] = (T[:, numx - 1] - T[:, numx - 2]) / DX  # Backward difference at i = numx
     q_x = -1 * k * dT_dx
