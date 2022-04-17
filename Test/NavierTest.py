@@ -462,3 +462,15 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.colorbar()
 plt.show()
+
+fig = plt.figure(figsize=(11,7), dpi=100)
+# plotting the pressure field as a contour
+plt.contourf(X, Y, M, alpha=0.5, cmap=cm.viridis)
+plt.colorbar()
+# plotting the pressure field outlines
+plt.contour(X, Y, M, cmap=cm.viridis)
+# plotting velocity field
+plt.quiver(X, Y, u, v)
+plt.xlabel('X')
+plt.ylabel('Y');
+plt.show()
