@@ -1,207 +1,57 @@
-import numpy
-from matplotlib import pyplot, cm
-from mpl_toolkits.mplot3d import Axes3D
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Apr 16 15:47:27 2022
 
+@author: Rayan
+"""
+import numpy as np
 
-def build_up_b(rho, dt, dx, dy, u, v):
-    b = numpy.zeros_like(u)
-    #periodic boundary over the entire domain of x apart from first and last point
-    b[1:-1, 1:-1] = (rho * (1 / dt * ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx) +
-                                      (v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy)) -
-                            ((u[1:-1, 2:] - u[1:-1, 0:-2]) / (2 * dx)) ** 2 -
-                            2 * ((u[2:, 1:-1] - u[0:-2, 1:-1]) / (2 * dy) *
-                                 (v[1:-1, 2:] - v[1:-1, 0:-2]) / (2 * dx)) -
-                            ((v[2:, 1:-1] - v[0:-2, 1:-1]) / (2 * dy)) ** 2))
+ui = 2.3
+Tin = 25.
+v = 1.6e-5
+x = 0.3048
+pr = 0.71
 
-    # Periodic BC Pressure @ x = 2
-    b[1:-1, -1] = (rho * (1 / dt * ((u[1:-1, 0] - u[1:-1, -2]) / (2 * dx) +
-                                    (v[2:, -1] - v[0:-2, -1]) / (2 * dy)) -
-                          ((u[1:-1, 0] - u[1:-1, -2]) / (2 * dx)) ** 2 -
-                          2 * ((u[2:, -1] - u[0:-2, -1]) / (2 * dy) *
-                               (v[1:-1, 0] - v[1:-1, -2]) / (2 * dx)) -
-                          ((v[2:, -1] - v[0:-2, -1]) / (2 * dy)) ** 2))
+a = v / pr
+q = 2100.
+re = (ui * x) / v
+k = 0.0255
 
-    # Periodic BC Pressure @ x = 0
-    b[1:-1, 0] = (rho * (1 / dt * ((u[1:-1, 1] - u[1:-1, -1]) / (2 * dx) +
-                                   (v[2:, 0] - v[0:-2, 0]) / (2 * dy)) -
-                         ((u[1:-1, 1] - u[1:-1, -1]) / (2 * dx)) ** 2 -
-                         2 * ((u[2:, 0] - u[0:-2, 0]) / (2 * dy) *
-                              (v[1:-1, 1] - v[1:-1, -1]) / (2 * dx)) -
-                         ((v[2:, 0] - v[0:-2, 0]) / (2 * dy)) ** 2))
+y = 0.03
+si = 4.92 * (re ** 0.5)
+so = (si / y) * 100
 
-    return b
+imax = 65
+jmax = 65
 
+dx = x / imax
+dy = y / jmax
+N = -6 / imax
+h = np.linspace(28, 22, N)
+u = np.ones(imax, jmax)
+v = np.zeros(1, jmax)
+x = np.zeros(1, jmax)
+T = np.zeros(imax, jmax)
 
-def pressure_poisson_periodic(p, dx, dy):
-    pn = numpy.empty_like(p)
+u[:, :] = 1
+u[:, 0] = 0
+u[0, :] = ui
+u[:, jmax] = ui
+u[0, 0] = ui
+v[0, :] = 0
 
-    for q in range(nit):
-        pn = p.copy()
-        p[1:-1, 1:-1] = (((pn[1:-1, 2:] + pn[1:-1, 0:-2]) * dy ** 2 +
-                          (pn[2:, 1:-1] + pn[0:-2, 1:-1]) * dx ** 2) /
-                         (2 * (dx ** 2 + dy ** 2)) -
-                         dx ** 2 * dy ** 2 / (2 * (dx ** 2 + dy ** 2)) * b[1:-1, 1:-1])
+for o in range(1, imax):
+    for j in range(2, jmax - 1):
+        for i in range(1, imax - 1):
+            u[i + 1, j] = (u[i, j] + (v * (u[i, j + 1] - 2 * u[i, j] + u[i, j - 1] * dx)) / ((u[i, j] * dy ** 2)) - (
+            (u[i, j + 1] - u[i, j - 1])) * v[i, j] * dx) / (2 * u[i, j] * dy)
+            v[i + 1, j] = v[i + 1, j - 1] - ((0.5 * dy * (u[i + 1, j] - u[i, j] + u[i + 1, j - 1] - u[i, j - 1]))) / dx
 
-        # Periodic BC Pressure @ x = 2
-        p[1:-1, -1] = (((pn[1:-1, 0] + pn[1:-1, -2]) * dy ** 2 +
-                        (pn[2:, -1] + pn[0:-2, -1]) * dx ** 2) /
-                       (2 * (dx ** 2 + dy ** 2)) -
-                       dx ** 2 * dy ** 2 / (2 * (dx ** 2 + dy ** 2)) * b[1:-1, -1])
+for m in range(1, imax):
+    for j in range(2, jmax - 1):
+        for i in range(1, imax - 1):
+            T[i, 0] = (T[i, 1] + q / h[0, i])
+            T[i + 1, j] = (T[i, j]) + (a * (T[i, j + 1] - 2 * T[i, j] + T[i, j - 1]) * dx) / (u[i, j] * dy ** 2) + (
+                        (T[i, j + 1] - T[i, j - 1]) * (v[i, j] * dx) / (u[i, j] * 2 * dy))
+            T[imax, 0] = (T[imax - 1, 0] - T[imax, 1])
 
-        # Periodic BC Pressure @ x = 0
-        p[1:-1, 0] = (((pn[1:-1, 1] + pn[1:-1, -1]) * dy ** 2 +
-                       (pn[2:, 0] + pn[0:-2, 0]) * dx ** 2) /
-                      (2 * (dx ** 2 + dy ** 2)) -
-                      dx ** 2 * dy ** 2 / (2 * (dx ** 2 + dy ** 2)) * b[1:-1, 0])
-
-        # Wall boundary conditions, pressure
-        p[-1, :] = p[-2, :]  # dp/dy = 0 at y = 2
-        p[0, :] = p[1, :]  # dp/dy = 0 at y = 0
-
-    return p
-
-
-##variable declarations
-nx = 41
-ny = 41
-nt = 10
-nit = 50
-c = 1
-lx=2
-ly=2
-dx = lx / (nx - 1)
-dy = ly / (ny - 1)
-x = numpy.linspace(0, 2, nx)
-y = numpy.linspace(0, 2, ny)
-X, Y = numpy.meshgrid(x, y)
-
-##physical variables
-rho = 1.225
-nu = .1
-F = 1
-dt = .01
-u_inf = 1
-p_inf = 101325
-T_inf = 288.16
-
-#initial conditions
-u = numpy.zeros((ny, nx))
-un = numpy.zeros((ny, nx))
-
-v = numpy.zeros((ny, nx))
-vn = numpy.zeros((ny, nx))
-
-p = numpy.ones((ny, nx))
-pn = numpy.ones((ny, nx))
-
-b = numpy.zeros((ny, nx))
-
-udiff = 1
-stepcount = 0
-
-while udiff > .001:
-    un = u.copy()
-    vn = v.copy()
-
-    b = build_up_b(rho, dt, dx, dy, u, v)
-    p = pressure_poisson_periodic(p, dx, dy)
-
-    u[1:-1, 1:-1] = (un[1:-1, 1:-1] -
-                     un[1:-1, 1:-1] * dt / dx *
-                     (un[1:-1, 1:-1] - un[1:-1, 0:-2]) -
-                     vn[1:-1, 1:-1] * dt / dy *
-                     (un[1:-1, 1:-1] - un[0:-2, 1:-1]) -
-                     dt / (2 * rho * dx) *
-                     (p[1:-1, 2:] - p[1:-1, 0:-2]) +
-                     nu * (dt / dx ** 2 *
-                           (un[1:-1, 2:] - 2 * un[1:-1, 1:-1] + un[1:-1, 0:-2]) +
-                           dt / dy ** 2 *
-                           (un[2:, 1:-1] - 2 * un[1:-1, 1:-1] + un[0:-2, 1:-1])) +
-                     F * dt)
-
-    v[1:-1, 1:-1] = (vn[1:-1, 1:-1] -
-                     un[1:-1, 1:-1] * dt / dx *
-                     (vn[1:-1, 1:-1] - vn[1:-1, 0:-2]) -
-                     vn[1:-1, 1:-1] * dt / dy *
-                     (vn[1:-1, 1:-1] - vn[0:-2, 1:-1]) -
-                     dt / (2 * rho * dy) *
-                     (p[2:, 1:-1] - p[0:-2, 1:-1]) +
-                     nu * (dt / dx ** 2 *
-                           (vn[1:-1, 2:] - 2 * vn[1:-1, 1:-1] + vn[1:-1, 0:-2]) +
-                           dt / dy ** 2 *
-                           (vn[2:, 1:-1] - 2 * vn[1:-1, 1:-1] + vn[0:-2, 1:-1])))
-
-    # Periodic BC u @ x = 2
-    u[1:-1, -1] = (un[1:-1, -1] - un[1:-1, -1] * dt / dx *
-                   (un[1:-1, -1] - un[1:-1, -2]) -
-                   vn[1:-1, -1] * dt / dy *
-                   (un[1:-1, -1] - un[0:-2, -1]) -
-                   dt / (2 * rho * dx) *
-                   (p[1:-1, 0] - p[1:-1, -2]) +
-                   nu * (dt / dx ** 2 *
-                         (un[1:-1, 0] - 2 * un[1:-1, -1] + un[1:-1, -2]) +
-                         dt / dy ** 2 *
-                         (un[2:, -1] - 2 * un[1:-1, -1] + un[0:-2, -1])) + F * dt)
-
-    # Periodic BC u @ x = 0
-    u[1:-1, 0] = (un[1:-1, 0] - un[1:-1, 0] * dt / dx *
-                  (un[1:-1, 0] - un[1:-1, -1]) -
-                  vn[1:-1, 0] * dt / dy *
-                  (un[1:-1, 0] - un[0:-2, 0]) -
-                  dt / (2 * rho * dx) *
-                  (p[1:-1, 1] - p[1:-1, -1]) +
-                  nu * (dt / dx ** 2 *
-                        (un[1:-1, 1] - 2 * un[1:-1, 0] + un[1:-1, -1]) +
-                        dt / dy ** 2 *
-                        (un[2:, 0] - 2 * un[1:-1, 0] + un[0:-2, 0])) + F * dt)
-
-    # Periodic BC v @ x = 2
-    v[1:-1, -1] = (vn[1:-1, -1] - un[1:-1, -1] * dt / dx *
-                   (vn[1:-1, -1] - vn[1:-1, -2]) -
-                   vn[1:-1, -1] * dt / dy *
-                   (vn[1:-1, -1] - vn[0:-2, -1]) -
-                   dt / (2 * rho * dy) *
-                   (p[2:, -1] - p[0:-2, -1]) +
-                   nu * (dt / dx ** 2 *
-                         (vn[1:-1, 0] - 2 * vn[1:-1, -1] + vn[1:-1, -2]) +
-                         dt / dy ** 2 *
-                         (vn[2:, -1] - 2 * vn[1:-1, -1] + vn[0:-2, -1])))
-
-    # Periodic BC v @ x = 0
-    v[1:-1, 0] = (vn[1:-1, 0] - un[1:-1, 0] * dt / dx *
-                  (vn[1:-1, 0] - vn[1:-1, -1]) -
-                  vn[1:-1, 0] * dt / dy *
-                  (vn[1:-1, 0] - vn[0:-2, 0]) -
-                  dt / (2 * rho * dy) *
-                  (p[2:, 0] - p[0:-2, 0]) +
-                  nu * (dt / dx ** 2 *
-                        (vn[1:-1, 1] - 2 * vn[1:-1, 0] + vn[1:-1, -1]) +
-                        dt / dy ** 2 *
-                        (vn[2:, 0] - 2 * vn[1:-1, 0] + vn[0:-2, 0])))
-
-    for i in range(nx):
-        if x[i] > 0:
-            u[0, i] = u_inf
-            v[0, i] = 0
-            p[0, i] = p_inf
-
-
-        if x[i] <= 0:
-            u[0, i] = 0
-            v[0, i] = 0
-            p[0, i] = 2 * p[1, i] - p[2, i]
-
-    # Wall BC: u,v = 0 @ y = 0,2
-    u[-1, :] = 0
-    v[-1, :] = 0
-
-    udiff = (numpy.sum(u) - numpy.sum(un)) / numpy.sum(u)
-    stepcount += 1
-    #print(stepcount)
-
-fig = pyplot.figure(figsize=(11, 7), dpi=100)
-pyplot.quiver(X[::3, ::3], Y[::3, ::3], u[::3, ::3], v[::3, ::3]);
-
-fig = pyplot.figure(figsize=(11, 7), dpi=100)
-pyplot.quiver(X, Y, u, v);
-pyplot.show()
