@@ -9,20 +9,20 @@ import matplotlib.pyplot as plot
 
 #Inlet Conditions
 ui = 2.3
-Tin = 25.
+Tin = 25
 visc = 1.6e-5
 x = 0.3048
 pr = 0.71
 
 #Physical Properties
 a = visc / pr
-q = 2100.
+q = 2100
 re = (ui * x) / visc
 k = 0.0255
 
 #Boundary Layer
 y = 0.03
-si = 4.92 * (re ** 0.5)
+si = 4.92 * (re ** -0.5)
 so = (si / y) * 100
 
 #Grid Generation
@@ -40,7 +40,7 @@ x = np.zeros((1, jmax))
 T = np.zeros((imax, jmax))
 
 #Boundary Conditions
-u[:, :] = 1
+u[:, :] = ui
 u[:, 0] = 0
 u[0, :] = ui
 u[:, jmax - 1] = ui
