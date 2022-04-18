@@ -182,7 +182,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
 
     # time march
     i = 0
-    converged = False
+    converged = True
 
     while not converged and i < maxiter:
         start_time = time.time()
@@ -225,7 +225,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
                 converged = True
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
-    runtime = time.time() - start_time
+      #  runtime = time.time() - start_time
 
     # Mass Flow Check
     massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
@@ -233,8 +233,8 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     massDiffCheck = 100 * abs(massIn - massOut) / massIn
     # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
     # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
-    return primitives, massDiffCheck, converged, i, runtime
-
+    
+    return primitives, massDiffCheck, converged, i
 
 def decodeSolutionVector(U):
     r = U[:, :, 0]
@@ -312,7 +312,7 @@ x, y = np.meshgrid(np.linspace(0, lhori, nx), np.linspace(0, lvert, ny))
 # Set initial conditions
 # Set all intial values to inflow values. Conditions on boundaries updated by solveMacCormack()
 primitives = Primitives(inflow.u * np.ones((ny, nx)), inflow.v * np.ones((ny, nx)), inflow.p * np.ones((ny, nx)), \
-                        inflow.T * np.ones((ny, nx)))
+    inflow.T * np.ones((ny, nx)))
 
 # Solve two wall temperature conditions
 Tw_Tinf = 1.0  # constant wall temperature
