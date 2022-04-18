@@ -6,62 +6,68 @@ from Primitives import *
 
 
 def ddxb(f, dx):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inX = np.linspace(1, nx, num=nx, endpoint=False, dtype=int)
-    dfdx = np.zeros((ny, nx))
-    dfdx[:, inX] = (f[:, inX] - f[:, inX - 1]) / dx
-    dfdx[:, 0] = dfdx[:, 1]
+    dfdx = np.zeros((ny, nx, n3))
+    dfdx[:, inX, :] = (f[:, inX, :] - f[:, inX - 1, :]) / dx
+    dfdx[:, 0, :] = dfdx[:, 1, :]
 
     return dfdx
 
 
 def ddxc(f, dx):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inX = np.linspace(1, nx-1, num=nx-1, endpoint=False, dtype=int)
-    dfdx = np.zeros((ny, nx))
-    dfdx[:, inX] = (f[:, inX + 1] - f[:, inX - 1]) / (2 * dx)
-    dfdx[:, 0] = (f[:, 1] - f[:, 0]) / dx
-    dfdx[:, nx - 1] = (f[:, nx - 1] - f[:, nx - 2]) / dx
+    dfdx = np.zeros((ny, nx, n3))
+    dfdx[:, inX, :] = (f[:, inX + 1, :] - f[:, inX - 1, :]) / (2 * dx)
+    dfdx[:, 0, :] = (f[:, 1, :] - f[:, 0, :]) / dx
+    dfdx[:, nx - 1, :] = (f[:, nx - 1, :] - f[:, nx - 2, :]) / dx
 
     return dfdx
 
 
 def ddxf(f, dx):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inX = np.linspace(0, nx-1, num=nx-1, endpoint=False, dtype=int)
-    dfdx = np.zeros((ny, nx))
-    dfdx[:, inX] = (f[:, inX + 1] - f[:, inX]) / dx
-    dfdx[:, nx - 1] = dfdx[:, nx - 2]
+    dfdx = np.zeros((ny, nx, n3))
+    dfdx[:, inX, :] = (f[:, inX + 1, :] - f[:, inX, :]) / dx
+    dfdx[:, nx - 1, :] = dfdx[:, nx - 2, :]
 
     return dfdx
 
 
 def ddyb(f, dy):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inY = np.linspace(1, ny, num=ny, endpoint=False, dtype=int)
-    dfdy = np.zeros((ny, nx))
-    dfdy[inY, :] = (f[inY, :] - f[inY - 1, :]) / dy
-    dfdy[0, :] = dfdy[1, :]
+    dfdy = np.zeros((ny, nx, n3))
+    dfdy[inY, :, :] = (f[inY, :, :] - f[inY - 1, :, :]) / dy
+    dfdy[0, :, :] = dfdy[1, :, :]
 
     return dfdy
 
 
 def ddyc(f, dy):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inY = np.linspace(1, ny-1, num=ny-1, endpoint=False, dtype=int)
-    dfdy = np.zeros((ny, nx))
-    dfdy[inY, :] = (f[inY + 1, :] - f[inY - 1, :]) / (2 * dy)
-    dfdy[0, :] = (f[1, :] - f[0, :]) / dy
-    dfdy[ny - 1, :] = (f[ny - 1, :] - f[ny - 2, :]) / dy
+    dfdy = np.zeros((ny, nx, n3))
+    dfdy[inY, :, :] = (f[inY + 1, :, :] - f[inY - 1, :, :]) / (2 * dy)
+    dfdy[0, :, :] = (f[1, :, :] - f[0, :, :]) / dy
+    dfdy[ny - 1, :, :] = (f[ny - 1, :, :] - f[ny - 2, :, :]) / dy
     return dfdy
 
 
 def ddyf(f, dy):
-    ny, nx = np.shape(f)
+    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
+    ny, nx, n3 = np.shape(f)
     inY = np.linspace(0, ny-1, num=ny-1, endpoint=False, dtype=int)
-    dfdy = np.zeros((ny, nx))
-    dfdy[inY, :] = (f[inY + 1, :] - f[inY, :]) / dy
-    dfdy[ny - 1, :] = dfdy[ny - 2, :]
+    dfdy = np.zeros((ny, nx, n3))
+    dfdy[inY, :, :] = (f[inY + 1, :, :] - f[inY, :, :]) / dy
+    dfdy[ny - 1, :, :] = dfdy[ny - 2, :, :]
     return dfdy
 
 
@@ -99,12 +105,12 @@ def calculateE(primitives, dx, dy, direction):
     # tyy = lam * (dudx + dvdy)+ 2 * mu * dvdy
     txy = mu * (dudy + dvdx)
     qx = -k * dTdx
-
-    E = np.zeros(np.shape(r, 1), np.shape(r, 2), 4)
+    ny, nx = np.shape(r)
+    E = np.zeros((ny, nx, 4))
     E[:, :, 0] = r * u
-    E[:, :, 1] = r * u ** 2 + p - txx
-    E[:, :, 2] = r * u * v - txy
-    E[:, :, 3] = (Et + p) * u - u * txx - v * txy + qx
+    E[:, :, 1] = r * u ** 2 + p - txx[:, :, 0]
+    E[:, :, 2] = r * u * v - txy[:, :, 0]
+    E[:, :, 3] = (Et + p) * u - u * txx[:, :, 0] - v * txy[:, :, 0] + qx[:, :, 0]
     return E
 
 
@@ -131,11 +137,12 @@ def calculateF(primitives, dx, dy, direction):
     tyy = lam * (dudx + dvdy) + 2 * mu * dvdy
     txy = mu * (dudy + dvdx)
     qy = -k * dTdy
-    F = np.zeros(np.shape(r, 1), np.shape(r, 2), 4)
+    ny, nx = np.shape(r)
+    F = np.zeros((ny, nx, 4))
     F[:, :, 0] = r * v
-    F[:, :, 1] = r * u * v - txy
-    F[:, :, 2] = r * v ** 2 + p - tyy
-    F[:, :, 3] = (Et + p) * v - u * txy - v * tyy + qy
+    F[:, :, 1] = r * u * v - txy[:, :, 0]
+    F[:, :, 2] = r * v ** 2 + p - tyy[:, :, 0]
+    F[:, :, 3] = (Et + p) * v - u * txy[:, :, 0] - v * tyy[:, :, 0] + qy[:, :, 0]
 
     return F
 
@@ -153,7 +160,7 @@ def calculateU(primitives):
 def postStressAndHeatFlux(primitives, x, y):
     dx = x[0, 1] - x[0, 0]
     dy = y[1, 0] - y[0, 0]
-    [u, v, [], T] = primitives.deal()
+    [u, v, _, T] = primitives.deal()
     [mu, lam, k] = primitives.getMuLambdaK()
     dudx = ddxc(u, dx)
     dudy = ddyc(u, dy)
