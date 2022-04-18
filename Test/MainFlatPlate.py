@@ -6,11 +6,11 @@ from Primitives import *
 
 
 def ddxb(f, dx):
-    ny, nx, n3 = np.shape(f)
+    ny, nx = np.shape(f)
     inX = np.linspace(1, nx, num=nx, endpoint=False)
-    dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX, :] = (f[:, inX, :] - f[:, inX - 1, :]) / dx
-    dfdx[:, 0, :] = dfdx[:, 1, :]
+    dfdx = np.zeros((ny, nx))
+    dfdx[:, inX] = (f[:, inX] - f[:, inX - 1]) / dx
+    dfdx[:, 0] = dfdx[:, 1]
 
     return dfdx
 
@@ -18,7 +18,7 @@ def ddxb(f, dx):
 def ddxc(f, dx):
     ny, nx = np.shape(f)
     inX = np.linspace(1, nx-1, num=nx-1, endpoint=False)
-    dfdx = np.zeros(ny, nx)
+    dfdx = np.zeros((ny, nx))
     dfdx[:, inX] = (f[:, inX + 1] - f[:, inX - 1]) / (2 * dx)
     dfdx[:, 0] = (f[:, 1] - f[:, 0]) / dx
     dfdx[:, nx - 1] = (f[:, nx - 1] - f[:, nx - 2]) / dx
@@ -27,21 +27,21 @@ def ddxc(f, dx):
 
 
 def ddxf(f, dx):
-    ny, nx, n3 = np.shape(f)
+    ny, nx = np.shape(f)
     inX = np.linspace(0, nx-1, num=nx-1, endpoint=False)
-    dfdx = np.zeros(ny, nx, n3)
-    dfdx[:, inX, :] = (f[:, inX + 1, :] - f[:, inX, :]) / dx
-    dfdx[:, nx - 1, :] = dfdx[:, nx - 2, :]
+    dfdx = np.zeros((ny, nx))
+    dfdx[:, inX] = (f[:, inX + 1] - f[:, inX]) / dx
+    dfdx[:, nx - 1] = dfdx[:, nx - 2]
 
     return dfdx
 
 
 def ddyb(f, dy):
-    ny, nx, n3 = np.shape(f)
+    ny, nx = np.shape(f)
     inY = np.linspace(1, ny, num=ny, endpoint=False)
-    dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY, :, :] = (f[inY, :, :] - f[inY - 1, :, :]) / dy
-    dfdy[0, :, :] = dfdy[1, :, :]
+    dfdy = np.zeros((ny, nx))
+    dfdy[inY, :] = (f[inY, :] - f[inY - 1, :]) / dy
+    dfdy[0, :] = dfdy[1, :]
 
     return dfdy
 
@@ -49,7 +49,7 @@ def ddyb(f, dy):
 def ddyc(f, dy):
     ny, nx = np.shape(f)
     inY = np.linspace(1, ny-1, num=ny-1, endpoint=False)
-    dfdy = np.zeros(ny, nx)
+    dfdy = np.zeros((ny, nx))
     dfdy[inY, :] = (f[inY + 1, :] - f[inY - 1, :]) / (2 * dy)
     dfdy[0, :] = (f[1, :] - f[0, :]) / dy
     dfdy[ny - 1, :] = (f[ny - 1, :] - f[ny - 2, :]) / dy
@@ -57,11 +57,11 @@ def ddyc(f, dy):
 
 
 def ddyf(f, dy):
-    ny, nx, n3 = np.shape(f)
+    ny, nx = np.shape(f)
     inY = np.linspace(0, ny-1, num=ny-1, endpoint=False)
-    dfdy = np.zeros(ny, nx, n3)
-    dfdy[inY, :, :] = (f[inY + 1, :, :] - f[inY, :, :]) / dy
-    dfdy[ny - 1, :, :] = dfdy[ny - 2, :, :]
+    dfdy = np.zeros((ny, nx))
+    dfdy[inY, :] = (f[inY + 1, :] - f[inY, :]) / dy
+    dfdy[ny - 1, :] = dfdy[ny - 2, :]
     return dfdy
 
 
