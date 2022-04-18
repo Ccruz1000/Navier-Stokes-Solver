@@ -186,12 +186,13 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     i = 0
     converged = False
 
+    start_time = time.time()
     while not converged and i < maxiter:
-        start_time = time.time()
         i += 1
 
         # time step size
         dt = primitives.calculateTimeStep(dx, dy, K)
+        # dt = 9e-15
 
         # solution vector
         U = calculateU(primitives)
@@ -223,15 +224,15 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
         rCurrent = primitives.r
         if i > 1:
             deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
-            if deltaR < 1e-8:
+            if deltaR < 1e-16:
                 converged = True
-            elif np.isnan(deltaR):
-                raise ValueError('Delta R failed to converge')
+            # elif np.isnan(deltaR):
+            #     raise ValueError('Delta R failed to converge')
             print('Iteration: ' + str(i) + ' | delta rho:' + str(deltaR))
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
-    #  runtime = time.time() - start_time
-
+    runtime = time.time() - start_time
+    # print('Runtime: ' + str(runtime) ' Seconds')
     # Mass Flow Check
     # massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
     # massOut = np.trapz(y[:, -1], primitives.u[:, -1] * primitives.r[:, -1])
@@ -240,7 +241,7 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
     # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
 
-    return primitives,#  converged, i  massDiffCheck,
+    return primitives,  converged, deltaR, runtime #, i  massDiffCheck,
 
 
 def decodeSolutionVector(U):
@@ -302,8 +303,13 @@ def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
 lhori = 0.00001  # m
 
 # Courant number
-K = 0.7
-
+# K = np.linspace(0.6, 0.8, 200)
+# K = 0.8
+# K = [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7427135678391961, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# K = [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# K = [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# K = [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+K = [0.7437185929648241]
 # grid size and max iterations
 nx = 70
 ny = 70
@@ -332,8 +338,24 @@ primitives = Primitives(inflow.u * np.ones((ny, nx, 1)), inflow.v * np.ones((ny,
 
 # Solve two wall temperature conditions
 Tw_Tinf = 1.0 # constant wall temperature
-constantTw = solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter)
-plt.figure(1)
-plt.contourf(x, y, constantTw[0].u[:, :, 0])
-plt.colorbar()
-plt.show()
+courant = []
+for k in K:
+    constantTw = solveMacCormack(primitives, inflow, Tw_Tinf, k, x, y, maxiter)
+    if not np.isnan(constantTw[-2]):
+        courant.append(k)
+        print('Runtime: ' + str(constantTw[-1]) + ' seconds')
+        plt.figure(1)
+        plt.contourf(x, y, constantTw[0].u[:, :, 0])
+        plt.colorbar()
+        plt.show()
+print(courant)
+# Succesful Courants first attempt iter = 50
+# [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7427135678391961, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# Succesful Courants second attempt iter = 500
+# [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# Successful courants third attempt iter = 1000
+# [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# Successful courants fourth attempt iter = 5000
+# [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]
+# Successful courants fifth attempt iter = 10000
+# [0.6271356783919598, 0.6301507537688442, 0.6613065326633166, 0.6623115577889447, 0.6653266331658292, 0.699497487437186, 0.700502512562814, 0.7437185929648241, 0.7447236180904523, 0.7929648241206031, 0.7939698492462313, 0.7979899497487437]

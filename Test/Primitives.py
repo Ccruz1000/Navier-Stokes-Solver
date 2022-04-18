@@ -54,12 +54,14 @@ class Primitives:
         vp = max(4/3 * np.any(Mu), np.any(self.gm * Mu / self.Pr)) / self.r
         dtCFL = 1 / (np.abs(self.u) / dx + np.abs(self.v) / dy + self.a * np.sqrt( 1 / (dx ** 2) + 1 / (dy ** 2)) + 2 * vp * (1 / (dx **2) + 1 / (dy ** 2)))
         dt = K * np.amin(dtCFL)
-        vp1 = np.amax(4/3 * Mu)
-        vp2 = np.amax((self.gm * Mu) / self.Pr)
-        if vp1 > vp2:
-            vp = vp1 / self.r
-        else:
-            vp = vp2 / self.r
+        array = np.array([4/3 * Mu, self.gm * Mu / self.Pr])
+        # vp1 = np.amax(4/3 * Mu)
+        # vp2 = np.amax((self.gm * Mu) / self.Pr)
+        # if vp1 > vp2:
+        #     vp = vp1 / self.r
+        # else:
+        #     vp = vp2 / self.r
+        vp = np.amax(array) / self.r
         dtCFL = 1 / (np.abs(self.u) / dx + np.abs(self.v) / dy + self.a * np.sqrt( 1 / (dx ** 2) + 1 / (dy ** 2)) + 2 * vp * (1 / (dx **2) + 1 / (dy ** 2)))
         dt = K * np.amin(dtCFL)
         return dt
