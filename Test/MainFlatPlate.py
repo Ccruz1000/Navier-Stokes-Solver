@@ -311,7 +311,7 @@ x, y = np.meshgrid(np.linspace(0, lhori, nx), np.linspace(0, lvert, ny))
 
 # Set initial conditions
 # Set all intial values to inflow values. Conditions on boundaries updated by solveMacCormack()
-primitives = Primitives(inflow.u * np.ones((ny, nx)), inflow.v * np.ones((ny, nx)), inflow.p * np.ones((ny, nx)), \
+primitives = Primitives(inflow.u * np.ones((ny, nx)), inflow.v * np.ones((ny, nx)), inflow.p * np.ones((ny, nx)),
                         inflow.T * np.ones((ny, nx)))
 
 # Solve two wall temperature conditions
