@@ -7,7 +7,7 @@ from Primitives import *
 
 def ddxb(f, dx):
     ny, nx = np.shape(f)
-    inX = np.linspace(1, nx, num=nx, endpoint=False)
+    inX = np.linspace(1, nx, num=nx, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx))
     dfdx[:, inX] = (f[:, inX] - f[:, inX - 1]) / dx
     dfdx[:, 0] = dfdx[:, 1]
@@ -17,7 +17,7 @@ def ddxb(f, dx):
 
 def ddxc(f, dx):
     ny, nx = np.shape(f)
-    inX = np.linspace(1, nx-1, num=nx-1, endpoint=False)
+    inX = np.linspace(1, nx-1, num=nx-1, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx))
     dfdx[:, inX] = (f[:, inX + 1] - f[:, inX - 1]) / (2 * dx)
     dfdx[:, 0] = (f[:, 1] - f[:, 0]) / dx
@@ -28,7 +28,7 @@ def ddxc(f, dx):
 
 def ddxf(f, dx):
     ny, nx = np.shape(f)
-    inX = np.linspace(0, nx-1, num=nx-1, endpoint=False)
+    inX = np.linspace(0, nx-1, num=nx-1, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx))
     dfdx[:, inX] = (f[:, inX + 1] - f[:, inX]) / dx
     dfdx[:, nx - 1] = dfdx[:, nx - 2]
@@ -38,7 +38,7 @@ def ddxf(f, dx):
 
 def ddyb(f, dy):
     ny, nx = np.shape(f)
-    inY = np.linspace(1, ny, num=ny, endpoint=False)
+    inY = np.linspace(1, ny, num=ny, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx))
     dfdy[inY, :] = (f[inY, :] - f[inY - 1, :]) / dy
     dfdy[0, :] = dfdy[1, :]
@@ -48,7 +48,7 @@ def ddyb(f, dy):
 
 def ddyc(f, dy):
     ny, nx = np.shape(f)
-    inY = np.linspace(1, ny-1, num=ny-1, endpoint=False)
+    inY = np.linspace(1, ny-1, num=ny-1, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx))
     dfdy[inY, :] = (f[inY + 1, :] - f[inY - 1, :]) / (2 * dy)
     dfdy[0, :] = (f[1, :] - f[0, :]) / dy
@@ -58,7 +58,7 @@ def ddyc(f, dy):
 
 def ddyf(f, dy):
     ny, nx = np.shape(f)
-    inY = np.linspace(0, ny-1, num=ny-1, endpoint=False)
+    inY = np.linspace(0, ny-1, num=ny-1, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx))
     dfdy[inY, :] = (f[inY + 1, :] - f[inY, :]) / dy
     dfdy[ny - 1, :] = dfdy[ny - 2, :]
