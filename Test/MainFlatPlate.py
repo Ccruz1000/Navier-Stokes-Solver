@@ -6,7 +6,6 @@ from Primitives import *
 
 
 def ddxb(f, dx):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inX = np.linspace(1, nx, num=nx, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx, n3))
@@ -17,7 +16,6 @@ def ddxb(f, dx):
 
 
 def ddxc(f, dx):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inX = np.linspace(1, nx-1, num=nx-1, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx, n3))
@@ -29,7 +27,6 @@ def ddxc(f, dx):
 
 
 def ddxf(f, dx):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inX = np.linspace(0, nx-1, num=nx-1, endpoint=False, dtype=int)
     dfdx = np.zeros((ny, nx, n3))
@@ -40,7 +37,6 @@ def ddxf(f, dx):
 
 
 def ddyb(f, dy):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inY = np.linspace(1, ny, num=ny, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx, n3))
@@ -51,7 +47,6 @@ def ddyb(f, dy):
 
 
 def ddyc(f, dy):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inY = np.linspace(1, ny-1, num=ny-1, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx, n3))
@@ -62,7 +57,6 @@ def ddyc(f, dy):
 
 
 def ddyf(f, dy):
-    f = np.reshape(f, (f.shape[0], f.shape[1], 1))
     ny, nx, n3 = np.shape(f)
     inY = np.linspace(0, ny-1, num=ny-1, endpoint=False, dtype=int)
     dfdy = np.zeros((ny, nx, n3))
@@ -105,12 +99,12 @@ def calculateE(primitives, dx, dy, direction):
     # tyy = lam * (dudx + dvdy)+ 2 * mu * dvdy
     txy = mu * (dudy + dvdx)
     qx = -k * dTdx
-    ny, nx = np.shape(r)
+    ny, nx, n3 = np.shape(r)
     E = np.zeros((ny, nx, 4))
-    E[:, :, 0] = r * u
-    E[:, :, 1] = r * u ** 2 + p - txx[:, :, 0]
-    E[:, :, 2] = r * u * v - txy[:, :, 0]
-    E[:, :, 3] = (Et + p) * u - u * txx[:, :, 0] - v * txy[:, :, 0] + qx[:, :, 0]
+    E[:, :, 0] = r[:, :, 0] * u[:, :, 0]
+    E[:, :, 1] = r[:, :, 0] * u[:, :, 0] ** 2 + p[:, :, 0] - txx[:, :, 0]
+    E[:, :, 2] = r[:, :, 0] * u[:, :, 0] * v[:, :, 0] - txy[:, :, 0]
+    E[:, :, 3] = (Et[:, :, 0] + p[:, :, 0]) * u[:, :, 0] - u[:, :, 0] * txx[:, :, 0] - v[:, :, 0] * txy[:, :, 0] + qx[:, :, 0]
     return E
 
 
@@ -137,23 +131,23 @@ def calculateF(primitives, dx, dy, direction):
     tyy = lam * (dudx + dvdy) + 2 * mu * dvdy
     txy = mu * (dudy + dvdx)
     qy = -k * dTdy
-    ny, nx = np.shape(r)
+    ny, nx, n3 = np.shape(r)
     F = np.zeros((ny, nx, 4))
-    F[:, :, 0] = r * v
-    F[:, :, 1] = r * u * v - txy[:, :, 0]
-    F[:, :, 2] = r * v ** 2 + p - tyy[:, :, 0]
-    F[:, :, 3] = (Et + p) * v - u * txy[:, :, 0] - v * tyy[:, :, 0] + qy[:, :, 0]
+    F[:, :, 0] = r[:, :, 0] * v[:, :, 0]
+    F[:, :, 1] = r[:, :, 0] * u[:, :, 0] * v[:, :, 0] - txy[:, :, 0]
+    F[:, :, 2] = r[:, :, 0] * v[:, :, 0] ** 2 + p[:, :, 0] - tyy[:, :, 0]
+    F[:, :, 3] = (Et[:, :, 0] + p[:, :, 0]) * v[:, :, 0] - u[:, :, 0] * txy[:, :, 0] - v[:, :, 0] * tyy[:, :, 0] + qy[:, :, 0]
 
     return F
 
 
 def calculateU(primitives):
-    numx, numy = np.shape(primitives.u)
+    numy, numx, n3 = np.shape(primitives.u)
     U = np.zeros((numx, numy, 4))
-    U[:, :, 0] = primitives.r
-    U[:, :, 1] = U[:, :, 0] * primitives.u
-    U[:, :, 2] = U[:, :, 0] * primitives.v
-    U[:, :, 3] = primitives.Et
+    U[:, :, 0] = primitives.r[:, :, 0]
+    U[:, :, 1] = U[:, :, 0] * primitives.u[:, :, 0]
+    U[:, :, 2] = U[:, :, 0] * primitives.v[:, :, 0]
+    U[:, :, 3] = primitives.Et[:, :, 0]
     return U
 
 
@@ -194,8 +188,8 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
 
     while not converged and i < maxiter:
         start_time = time.time()
-        print(i)
         i += 1
+        print(i)
 
         # time step size
         dt = primitives.calculateTimeStep(dx, dy, K)
@@ -232,20 +226,20 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
             deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
             if deltaR < 1e-8:
                 converged = True
-            print('Iteration: ' + i + '| delta rho:' + deltaR)
+            print('Iteration: ' + str(i) + '| delta rho:' + str(deltaR))
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
     #  runtime = time.time() - start_time
 
     # Mass Flow Check
-    massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
-    massOut = np.trapz(y[:, -1], primitives.u[:, -1] * primitives.r[:, -1])
-    massDiffCheck = 100 * abs(massIn - massOut) / massIn
-    print('Mass inflow matches mass outflow within ')
+    # massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
+    # massOut = np.trapz(y[:, -1], primitives.u[:, -1] * primitives.r[:, -1])
+    # massDiffCheck = 100 * abs(massIn - massOut) / massIn
+    # print('Mass inflow matches mass outflow within ')
     # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
     # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
 
-    return primitives, massDiffCheck, converged, i
+    return primitives,#  converged, i  massDiffCheck,
 
 
 def decodeSolutionVector(U):
@@ -253,11 +247,19 @@ def decodeSolutionVector(U):
     u = U[:, :, 1] / r
     v = U[:, :, 2] / r
     Et = U[:, :, 3]
+    numx = np.shape(r[0])
+    numy = np.shape(r[1])
+    r = r.reshape((r.shape[0], r.shape[1], 1))
+    u = u.reshape((u.shape[0], u.shape[1], 1))
+    v  = v.reshape((v.shape[0], v.shape[1], 1))
+    Et  = Et.reshape((Et.shape[0], Et.shape[1], 1))
     e = Et / r - .5 * (u ** 2 + v ** 2)
-    cv = Primitives.R / (Primitives.gm - 1)
+    prim_val = Primitives(1, 1, 1, 1)
+    cv = prim_val.R / (prim_val.gm - 1)
     T = e / cv
-    p = r * Primitives.R * T
+    p = r * prim_val.R * T
     primitives = Primitives(u, v, p, T)
+    number = 1
     return primitives
 
 
@@ -299,7 +301,7 @@ def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
 lhori = 0.00001  # m
 
 # Courant number
-K = 0.8
+K = 0.61
 
 # grid size and max iterations
 nx = 70
@@ -324,9 +326,13 @@ x, y = np.meshgrid(np.linspace(0, lhori, nx), np.linspace(0, lvert, ny))
 # Set initial conditions
 
 # Set all intial values to inflow values. Conditions on boundaries updated by solveMacCormack()
-primitives = Primitives(inflow.u * np.ones((ny, nx)), inflow.v * np.ones((ny, nx)), inflow.p * np.ones((ny, nx)),
-                        inflow.T * np.ones((ny, nx)))
+primitives = Primitives(inflow.u * np.ones((ny, nx, 1)), inflow.v * np.ones((ny, nx, 1)), inflow.p * np.ones((ny, nx, 1)),
+                        inflow.T * np.ones((ny, nx, 1)))
 
 # Solve two wall temperature conditions
 Tw_Tinf = 1.0 # constant wall temperature
 constantTw = solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter)
+plt.figure(1)
+plt.contourf(x, y, constantTw[0].u[:, :, 0])
+plt.colorbar()
+plt.show()
