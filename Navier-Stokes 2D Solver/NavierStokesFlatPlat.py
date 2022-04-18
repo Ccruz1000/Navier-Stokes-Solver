@@ -202,7 +202,7 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     # Density is computed from equation of state
     u[1:numy - 2, numx - 1] = 2 * u[1:numy - 2, numx - 2] - u[1:numy - 2, numx - 3]
     v[1:numy - 2, numx - 1] = 2 * v[1:numy - 2, numx - 2] - v[1:numy - 2, numx - 3]
-    p[1:numy - 2, numx - 1] = 2 * p[1:numy - 2, numx - 2] - p[1:numy - 2, numx - 3]
+    # p[1:numy - 2, numx - 1] = 2 * p[1:numy - 2, numx - 2] - p[1:numy - 2, numx - 3]
     T[1:numy - 2, numx - 1] = 2 * T[1:numy - 2, numx - 2] - T[1:numy - 2, numx - 3]
     rho[1:numy - 2, numx - 1] = p[1:numy - 2, numx - 1] / (R * T[1:numy - 2, numx - 1])
     # v[1:numy - 1, numx] = 2 * v[1:numy - 1, numx - 1] - v[1:numy - 1, numx - 2]
@@ -212,7 +212,7 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     # Outlet on upper boundary
     u[numy - 1, 1: numx - 1] = u_inf
     v[numy - 1, 1: numx - 1] = 0
-    p[numy - 1, 1: numx - 1] = p_inf
+    # p[numy - 1, 1: numx - 1] = p_inf
     T[numy - 1, 1: numx - 1] = T_inf
     rho[numy - 1, 1:numx - 1] = rho_inf
     # u[1:numy, 0] = u_inf
@@ -223,9 +223,10 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     for i in range(numx):
         # Before Plate free stream
         if x[i] > 0:
+            print(x[i])
             u[0, i] = u_inf
             v[0, i] = 0
-            p[0, i] = p_inf
+           #  p[0, i] = p_inf
             T[0, i] = T_inf
             rho[0, i] = rho_inf
         # Case 2 - > On Plate
@@ -238,7 +239,7 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
     # Case 3 - > Free stream for inlet
     u[1:numy, 0] = u_inf
     v[1:numy, 0] = 0
-    p[1:numy, 0] = p_inf
+   #  p[1:numy, 0] = p_inf
     T[1:numy, 0] = T_inf
     rho[1:numy, 0] = rho_inf
     return rho, u, v, p, T
@@ -248,9 +249,9 @@ def BC(rho, u, v, p, T, rho_inf, u_inf, p_inf, T_inf, T_w_T_inf, R, x):
 def CONVER(rho_old, rho):
     # Check for a converged solution. The converged criterion is that the change in density between
     # time steps is lower than 1e-14
-    if not np.isreal(rho):
+    if not np.isreal(rho.any()):
         raise ValueError('The calculation has failed. A complex number has been detected')
-    elif(max(max(abs(rho_old - rho)))) < 1e-8:
+    elif(max(max(abs(rho_old.any() - rho.any())))) < 1e-8:
         converged = True
     else:
         converged = False
