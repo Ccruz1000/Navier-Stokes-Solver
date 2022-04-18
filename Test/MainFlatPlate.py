@@ -186,7 +186,8 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
 
     while not converged and i < maxiter:
         start_time = time.time()
-        i = i + 1
+        print(i)
+        i += 1
 
         # time step size
         dt = primitives.calculateTimeStep(dx, dy, K)
@@ -223,17 +224,20 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
             deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
             if deltaR < 1e-8:
                 converged = True
+            print('Iteration: ' + i + '| delta rho:' + deltaR)
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
-    runtime = time.time() - start_time
+    #  runtime = time.time() - start_time
 
     # Mass Flow Check
     massIn = np.trapz(y[:, 0], primitives.u[:, 0] * primitives.r[:, 0])
     massOut = np.trapz(y[:, -1], primitives.u[:, -1] * primitives.r[:, -1])
     massDiffCheck = 100 * abs(massIn - massOut) / massIn
+    print('Mass inflow matches mass outflow within ')
     # fprintf(1, 'Mass inflow matches mass outflow within %.3f%%.\n', massDiffCheck)
     # fprintf(1, 'Runtime: %.2f seconds.\n', runTime)
-    return primitives, massDiffCheck, converged, i, runtime
+
+    return primitives, massDiffCheck, converged, i
 
 
 def decodeSolutionVector(U):

@@ -53,7 +53,10 @@ class Primitives:
         Mu = self.mu
         vp = max(4/3 * np.any(Mu), np.any(self.gm * Mu / self.Pr)) / self.r
         dtCFL = 1 / (np.abs(self.u) / dx + np.abs(self.v) / dy + self.a * np.sqrt( 1 / (dx ** 2) + 1 / (dy ** 2)) + 2 * vp * (1 / (dx **2) + 1 / (dy ** 2)))
-        dt = K * min(np.all(dtCFL))
+        dt = K * np.amin(dtCFL)
+        vp = np.amax(4/3 * np.all(Mu), np.all((self.gm * Mu / self.Pr))) / self.r
+        dtCFL = 1 / (np.abs(self.u) / dx + np.abs(self.v) / dy + self.a * np.sqrt( 1 / (dx ** 2) + 1 / (dy ** 2)) + 2 * vp * (1 / (dx **2) + 1 / (dy ** 2)))
+        dt = K * np.amin(dtCFL)
         return dt
 
 
