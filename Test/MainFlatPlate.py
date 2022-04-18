@@ -189,7 +189,6 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
     while not converged and i < maxiter:
         start_time = time.time()
         i += 1
-        print(i)
 
         # time step size
         dt = primitives.calculateTimeStep(dx, dy, K)
@@ -226,7 +225,9 @@ def solveMacCormack(primitives, inflow, Tw_Tinf, K, x, y, maxiter):
             deltaR = np.max(np.max(np.abs(rCurrent - rLast)))
             if deltaR < 1e-8:
                 converged = True
-            print('Iteration: ' + str(i) + '| delta rho:' + str(deltaR))
+            elif np.isnan(deltaR):
+                raise ValueError('Delta R failed to converge')
+            print('Iteration: ' + str(i) + ' | delta rho:' + str(deltaR))
             # fprintf(1, 'Iteration:%5d | delta rho: %8e\n', i, deltaR)
         rLast = rCurrent
     #  runtime = time.time() - start_time
@@ -301,7 +302,7 @@ def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
 lhori = 0.00001  # m
 
 # Courant number
-K = 0.61
+K = 0.7
 
 # grid size and max iterations
 nx = 70
