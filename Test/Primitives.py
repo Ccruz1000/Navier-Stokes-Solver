@@ -17,18 +17,25 @@ class Primitives:
         self.Pr = 0.71  # Prandtl number
         self.R = 287    # J/kg-K, Specific gas constant
         # Calculated variables
-        self.r = p / (R * T)# Density
-        self.e = cv * T # Internal energy
-        self.Et = r * (e + 0.5 * (u ** 2 + v ** 2))# Total energy
-        self.mu = mu0 * (T / T0) ** (3/2) * (T0 + 110) / (T + 110) # Molecular viscosity coefficient
-        self.lam = - 2 / 3 * mu  # Second viscosity coefficient
-        self.a = np.sqrt(gm * R * T) # Speed of sound
-        self.k = cp * mu / Pr # Thermal conductivity
-        self.cv = R / (gm - 1)# Specific heat for an ideal gas at constant volume
-        self.cp  = gm * cv# Specific heat for an ideal gas at constant pressure
+        self.r = p / (self.R * T)# Density
+        self.mu = self.mu0 * (T / self.T0) ** (3/2) * (self.T0 + 110) / (T + 110) # Molecular viscosity coefficient
+        self.lam = - 2 / 3 * self.mu  # Second viscosity coefficient
+        self.a = np.sqrt(self.gm * self.R * T)  # Speed of sound
+        self.cv = self.R / (self.gm - 1)  # Specific heat for an ideal gas at constant volume
+        self.e = self.cv * T # Internal energy
+        self.Et = self.r * (self.e + 0.5 * (u ** 2 + v ** 2))# Total energy
+        self.cp  = self.gm * self.cv  # Specific heat for an ideal gas at constant pressure
+        self.k = self.cp * self.mu / self.Pr  # Thermal conductivity
 
         # Define methods
-    def getMuLmadaK(self):
+
+    def deal(self):
+        u = self.u
+        v = self.v
+        p = self.p
+        T = self.T
+        return u, v, p, T
+    def getMuLambdaK(self):
         muOut = self.mu
         lamdaOut = -2/3 * muOut
         kOut = self.cp * muOut /self.Pr
@@ -44,10 +51,10 @@ class Primitives:
 
     def calculateTimeStep(self, dx, dy, K):
         Mu = self.mu
-        vp = max(4/3 * Mu, self.gm * Mu / self.Pr) / self.r
+        vp = max(4/3 * Mu.any(), (self.gm * Mu / self.Pr).any()) / self.r
         dtCFL = 1 / (abs(self.u) / dx + abs(self.v) / dy + self.a * np.sqrt( 1 / (dx ** 2) + 1 / (dy ** 2)) + 2 * vp * (1 / (dx **2) + 1 / (dy ** 2)))
-        dt = K * min(dtCFL[:])
-
+        dt = K * min(dtCFL[:].all())
+        return dt
 
 
 

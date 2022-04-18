@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import time
+from Primitives import *
 
 
 def ddxb(f, dx):
@@ -250,7 +251,7 @@ def decodeSolutionVector(U):
 
 def updateBoundaryConditions(primitivesIn, inflow, Tw_Tinf):
     [u, v, p, T] = primitivesIn.deal()
-    [Vinf, [], pinf, Tinf] = inflow.deal()
+    [Vinf, _, pinf, Tinf] = inflow.deal()
     u[:, 0] = Vinf
     v[:, 0] = 0
     p[:, 0] = pinf
@@ -302,7 +303,7 @@ inflow.u = Minf * inflow.a  # m/s
 Reinf = inflow.calculateReynoldsNumber(lhori)
 
 # boundary layer size & vertical domain size
-delta = 5 * lhori / np.sqrt(Reinf)
+delta = 5 * lhori / np.sqrt(Reinf[0])
 lvert = 5 * delta
 
 # grid
@@ -310,8 +311,8 @@ x, y = np.meshgrid(np.linspace(0, lhori, nx), np.linspace(0, lvert, ny))
 
 # Set initial conditions
 # Set all intial values to inflow values. Conditions on boundaries updated by solveMacCormack()
-primitives = Primitives(inflow.u * np.ones(ny, nx), inflow.v * np.ones(ny, nx), inflow.p * np.ones(ny, nx), \
-                        inflow.T * np.ones(ny, nx))
+primitives = Primitives(inflow.u * np.ones((ny, nx)), inflow.v * np.ones((ny, nx)), inflow.p * np.ones((ny, nx)), \
+                        inflow.T * np.ones((ny, nx)))
 
 # Solve two wall temperature conditions
 Tw_Tinf = 1.0  # constant wall temperature
