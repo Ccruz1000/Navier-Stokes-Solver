@@ -141,7 +141,8 @@ def calculateF(primitives, dx, dy, direction):
 
 
 def calculateU(primitives):
-    U = np.zeros(np.shape(primitives.u, 1), np.shape(primitives.u, 2), 4)
+    numx, numy = np.shape(primitives.u)
+    U = np.zeros((numx, numy, 4))
     U[:, :, 0] = primitives.r
     U[:, :, 1] = U[:, :, 0] * primitives.u
     U[:, :, 2] = U[:, :, 0] * primitives.v
